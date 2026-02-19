@@ -3,8 +3,6 @@ import html2canvas from 'html2canvas-pro';
 import { BrandedPage, HERO_IMAGES } from '@/components/charts/ChartView';
 import type { MarketData, ShareType, ExportFormat, VisualizationType, PageTheme } from '@/types';
 import {
-  exportAsPNG,
-  exportAsPDF,
   exportBatchAsZip,
   type BatchExportItem,
 } from '@/lib/exportEngine';
@@ -97,28 +95,6 @@ async function renderAndCapture(
 }
 
 /**
- * Export a single market report.
- */
-export async function exportSingleReport(
-  market: MarketData,
-  shareType: ShareType,
-  format: ExportFormat,
-  config?: ExportConfig,
-): Promise<void> {
-  const exportConfig = config ?? { visualization: 'bar', showKPI: false, showSummary: false, pageTheme: 'light' as PageTheme };
-  const dataUrl = await renderAndCapture(market, shareType, exportConfig);
-  const safeName = market.marketName.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '-');
-  const fileName = `RLSIR-${safeName}`;
-
-  if (format === 'png' || format === 'both') {
-    await exportAsPNG(dataUrl, fileName);
-  }
-  if (format === 'pdf' || format === 'both') {
-    await exportAsPDF(dataUrl, fileName, market.marketName);
-  }
-}
-
-/**
  * Export multiple market reports as a ZIP.
  */
 export async function exportBatchReports(
@@ -146,20 +122,6 @@ export async function exportBatchReports(
 
   if (items.length === 0) {
     throw new Error('No charts to export');
-  }
-
-  if (items.length === 1) {
-    const item = items[0];
-    const safeName = item.market.marketName.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '-');
-    const fileName = `RLSIR-${safeName}`;
-
-    if (format === 'png' || format === 'both') {
-      await exportAsPNG(item.chartDataUrl, fileName);
-    }
-    if (format === 'pdf' || format === 'both') {
-      await exportAsPDF(item.chartDataUrl, fileName, item.market.marketName);
-    }
-    return;
   }
 
   await exportBatchAsZip(items, format);

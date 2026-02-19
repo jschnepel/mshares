@@ -109,9 +109,7 @@ export function ExportControls() {
         )}
         {isExporting
           ? 'Exporting...'
-          : selectedIds.size > 1
-            ? `Export ${selectedIds.size} Reports (ZIP)`
-            : 'Export Report'
+          : `Export ${selectedIds.size} Report${selectedIds.size !== 1 ? 's' : ''} (ZIP)`
         }
       </button>
 
