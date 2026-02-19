@@ -499,7 +499,7 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
           className="text-right leading-tight"
           style={{ fontSize: 5, color: footerText, maxWidth: '65%' }}
         >
-          ARMLS data compiled through BrokerMetrics. All information should be verified
+          ARMLS data compiled through BrokerMetrics as of {new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}. All information should be verified
           by the recipient and none is guaranteed as accurate by ARMLS.
         </p>
       </div>
