@@ -365,8 +365,8 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
         <img
           src="/images/logos/sothebys-branding.png"
           alt="Russ Lyon Sotheby's International Realty"
-          className="absolute top-0 right-0 z-10"
-          style={{ height: '100%', width: 'auto' }}
+          className="absolute z-10"
+          style={{ height: '70%', width: 'auto', top: '50%', right: 16, transform: 'translateY(-50%)' }}
           crossOrigin="anonymous"
         />
       </div>
