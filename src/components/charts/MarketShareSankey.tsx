@@ -86,8 +86,8 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
       .text(shareType === 'dollar' ? 'Market Share Flow ($)' : 'Market Share Flow (#)');
 
     const labelSize = mode === 'export' ? 13 : mode === 'branded' ? 8 : 11;
-    const rightMargin = mode === 'branded' ? 240 : 160;
-    const margin = { top: 35, right: rightMargin, bottom: 10, left: 15 };
+    const rightMargin = mode === 'branded' ? 210 : 160;
+    const margin = { top: 35, right: rightMargin, bottom: 10, left: 12 };
 
     const sankeyGen = d3Sankey()
       .nodeWidth(20)

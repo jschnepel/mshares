@@ -142,8 +142,8 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
     },
     layout: {
       padding: {
-        right: isClean ? 60 : 50,
-        left: isClean ? 10 : 5,
+        right: mode === 'branded' ? 45 : isClean ? 60 : 50,
+        left: mode === 'branded' ? 4 : isClean ? 10 : 5,
         top: 10,
         bottom: 10,
       },

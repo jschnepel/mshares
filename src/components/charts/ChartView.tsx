@@ -358,12 +358,31 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
 
-        <div className="absolute bottom-0 left-0 p-6 z-10">
-          <h1 className="text-white font-bold uppercase leading-[0.95]" style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.5rem, 4vw, 3rem)' }}>
-            {market.marketName.split(' ').map((word, i) => (
-              <span key={i}>{word}<br /></span>
-            ))}
+        <div className="absolute bottom-0 left-0 z-10" style={{ padding: '0 24px 18px', maxWidth: '55%' }}>
+          <p
+            className="uppercase font-medium"
+            style={{
+              fontFamily: 'Inter, sans-serif',
+              fontSize: 5,
+              letterSpacing: '0.3em',
+              color: 'rgba(255,255,255,0.7)',
+              marginBottom: 4,
+            }}
+          >
+            Market Intelligence Report
+          </p>
+          <h1
+            className="text-white font-bold uppercase"
+            style={{
+              fontFamily: 'Playfair Display, serif',
+              fontSize: 22,
+              lineHeight: 1.1,
+              textShadow: '0 1px 8px rgba(0,0,0,0.35)',
+            }}
+          >
+            {market.marketName}
           </h1>
+          <div style={{ width: 28, height: 1.5, backgroundColor: COLORS.gold, marginTop: 7, opacity: 0.7 }} />
         </div>
 
         <img
@@ -377,52 +396,6 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
 
       {/* ── Bento content area — fills remaining space ── */}
       <div className="flex-1 flex flex-col min-h-0" style={{ backgroundColor: pageBg }}>
-
-        {/* KPI Strip — premium horizontal metrics row */}
-        {showKPI && sothebys && (
-          <div className="shrink-0">
-            <div
-              className="flex items-center justify-between"
-              style={{
-                backgroundColor: COLORS.navy,
-                borderTop: `2px solid ${COLORS.gold}`,
-                padding: extraSections > 1 ? '7px 16px' : '9px 20px',
-              }}
-            >
-              {kpiItems.map((kpi, idx) => (
-                <div key={kpi.label} className="flex items-center">
-                  <div className="text-center" style={{ minWidth: 56 }}>
-                    <div
-                      className="font-bold leading-none"
-                      style={{
-                        fontFamily: 'Playfair Display, serif',
-                        fontSize: extraSections > 1 ? 12 : 14,
-                        color: kpi.accent ? COLORS.gold : COLORS.cream,
-                      }}
-                    >
-                      {kpi.value}
-                    </div>
-                    <div
-                      className="uppercase font-medium"
-                      style={{
-                        fontFamily: 'Inter, sans-serif',
-                        fontSize: 5,
-                        letterSpacing: '0.15em',
-                        color: 'rgba(255,255,255,0.3)',
-                        marginTop: 3,
-                      }}
-                    >
-                      {kpi.label}
-                    </div>
-                  </div>
-                  {idx < kpiItems.length - 1 && (
-                    <div style={{ width: 1, height: 22, backgroundColor: 'rgba(191,166,122,0.2)' }} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Market Overview — contrasting background bar */}
         {showSummary && (
@@ -461,8 +434,53 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
           </div>
         )}
 
+        {/* KPI Strip */}
+        {showKPI && sothebys && (
+          <div className="shrink-0" style={{ borderTop: `1.5px solid ${COLORS.gold}` }}>
+            <div
+              className="flex items-stretch"
+              style={{
+                backgroundColor: COLORS.navy,
+                padding: extraSections > 1 ? '8px 16px' : '10px 20px',
+              }}
+            >
+              {kpiItems.map((kpi, idx) => (
+                <div key={kpi.label} className="flex items-center" style={{ flex: 1 }}>
+                  <div className="text-center" style={{ flex: 1 }}>
+                    <div
+                      className="font-bold leading-none"
+                      style={{
+                        fontFamily: 'Playfair Display, serif',
+                        fontSize: extraSections > 1 ? 13 : 15,
+                        color: kpi.accent ? COLORS.gold : COLORS.cream,
+                      }}
+                    >
+                      {kpi.value}
+                    </div>
+                    <div
+                      className="uppercase font-medium"
+                      style={{
+                        fontFamily: 'Inter, sans-serif',
+                        fontSize: 5.5,
+                        letterSpacing: '0.18em',
+                        color: 'rgba(191,166,122,0.45)',
+                        marginTop: 3,
+                      }}
+                    >
+                      {kpi.label}
+                    </div>
+                  </div>
+                  {idx < kpiItems.length - 1 && (
+                    <div style={{ width: 1, height: 22, backgroundColor: 'rgba(191,166,122,0.12)', flexShrink: 0 }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Chart — takes all remaining vertical space */}
-        <div className="flex-1 min-h-0 px-4 py-1">
+        <div className="flex-1 min-h-0 py-1" style={{ paddingLeft: 16, paddingRight: 10 }}>
           <div className="h-full w-full">
             {visualization === 'bar' && <MarketShareBar key={`branded-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} />}
             {visualization === 'treemap' && <MarketShareTreemap key={`treemap-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} />}
