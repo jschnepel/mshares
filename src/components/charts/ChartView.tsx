@@ -473,11 +473,35 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
 
       {/* ── Footer ── */}
       <div
-        className="shrink-0 flex items-center justify-between px-4 py-1.5"
+        className="shrink-0 flex items-center justify-between px-4 py-2"
         style={{ borderTop: `2px solid ${footerBorder}`, backgroundColor: pageBg }}
       >
-        <span style={{ fontSize: 6, color: footerText }}>ARMLS data compiled through BrokerMetrics</span>
-        <span style={{ fontSize: 6, color: footerText }}>Russ Lyon Sotheby's International Realty</span>
+        {/* Bottom-left: Equal Housing + Realtor logos */}
+        <div className="flex items-center gap-2">
+          <img
+            src="/images/logos/equal-housing.svg"
+            alt="Equal Housing Opportunity"
+            style={{ height: 18, opacity: isDark ? 0.5 : 0.7 }}
+            className={isDark ? 'invert' : ''}
+            crossOrigin="anonymous"
+          />
+          <img
+            src="/images/logos/realtor.svg"
+            alt="Realtor"
+            style={{ height: 16, opacity: isDark ? 0.5 : 0.7 }}
+            className={isDark ? 'invert' : ''}
+            crossOrigin="anonymous"
+          />
+        </div>
+
+        {/* Bottom-right: ARMLS disclaimer */}
+        <p
+          className="text-right leading-tight"
+          style={{ fontSize: 5, color: footerText, maxWidth: '65%' }}
+        >
+          ARMLS data compiled through BrokerMetrics. All information should be verified
+          by the recipient and none is guaranteed as accurate by ARMLS.
+        </p>
       </div>
 
     </div>
