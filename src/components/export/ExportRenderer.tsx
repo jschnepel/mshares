@@ -9,7 +9,7 @@ import {
 
 /**
  * WYSIWYG export: render at the same size as the preview (600px wide, 8.5:11 ratio),
- * then capture at 3x scale for high-resolution output (~1800×2330 px).
+ * then capture at 4x scale for high-resolution output (~2400×3104 px).
  */
 const RENDER_WIDTH = 600;
 const RENDER_HEIGHT = Math.round(RENDER_WIDTH * (11 / 8.5)); // 776
@@ -78,7 +78,7 @@ async function renderAndCapture(
   const canvas = await html2canvas(container, {
     width: RENDER_WIDTH,
     height: RENDER_HEIGHT,
-    scale: 3,
+    scale: 4,
     useCORS: true,
     allowTaint: false,
     backgroundColor: bgColor,

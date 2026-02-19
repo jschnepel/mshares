@@ -494,7 +494,7 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
         {/* Bottom-right: ARMLS disclaimer */}
         <p
           className="text-right leading-tight"
-          style={{ fontSize: 5, color: footerText, maxWidth: '65%' }}
+          style={{ fontSize: 7, color: footerText, maxWidth: '65%' }}
         >
           ARMLS data compiled through BrokerMetrics® — Total $ Volume by Broker ($1M and up) — Metro Phoenix — 03/01/2024 - 04/02/2025
         </p>
