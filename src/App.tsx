@@ -1,4 +1,3 @@
-import { Sidebar } from '@/components/layout/Sidebar';
 import { MetricRibbon } from '@/components/layout/MetricRibbon';
 import { DropZone } from '@/components/upload/DropZone';
 import { BatchQueue } from '@/components/upload/BatchQueue';
@@ -11,9 +10,6 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="h-screen flex bg-navy-deep text-cream overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar />
-
         {/* Main layout */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Metric ribbon */}
