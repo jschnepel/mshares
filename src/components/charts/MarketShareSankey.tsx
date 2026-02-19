@@ -55,7 +55,6 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
 
     const width = svgRef.current.clientWidth || 700;
     const height = svgRef.current.clientHeight || 450;
-    const isClean = mode === 'export' || mode === 'branded';
     const lightText = darkBg || mode === 'preview';
     const titleColor = lightText ? COLORS.cream : COLORS.navy;
     const titleSize = mode === 'export' ? 26 : 14;
