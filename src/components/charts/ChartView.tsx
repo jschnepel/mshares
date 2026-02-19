@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useMarketStore } from '@/store/marketStore';
 import { MarketShareBar } from './MarketShareBar';
 import { MarketShareTreemap } from './MarketShareTreemap';
@@ -10,9 +10,27 @@ import { COLORS } from '@/lib/constants';
 import { generateExecutiveSummary } from '@/lib/summaryGenerator';
 import type { VisualizationType, ShareType, PageTheme } from '@/types';
 
-// Base64-encoded logos for reliable html2canvas export
-const EQUAL_HOUSING_DATA_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0iIzFhMWExYSI+CiAgPHBhdGggZD0iTTQwIDVMNSAzNWgxMHYzNWg1MFYzNWgxMEw0MCA1em0tMTUgNjBWMzhoMzB2MjdIMjV6Ii8+CiAgPHJlY3QgeD0iMzAiIHk9IjQ0IiB3aWR0aD0iMjAiIGhlaWdodD0iMyIvPgogIDxyZWN0IHg9IjMwIiB5PSI1MSIgd2lkdGg9IjIwIiBoZWlnaHQ9IjMiLz4KICA8dGV4dCB4PSI0MCIgeT0iNzYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iYm9sZCI+RVFVQUwgSE9VU0lORzwvdGV4dD4KICA8dGV4dCB4PSI0MCIgeT0iODIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNSIgZm9udC1mYW1pbHk9IkFyaWFsIj5PUFBPUlRVTklUWTwvdGV4dD4KPC9zdmc+Cg==';
-const REALTOR_DATA_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA3MCIgZmlsbD0iIzFhMWExYSI+CiAgPHJlY3QgeD0iNSIgeT0iNSIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMyIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjMiIGZpbGw9Im5vbmUiLz4KICA8dGV4dCB4PSIzMCIgeT0iNDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzIiIGZvbnQtZmFtaWx5PSJzZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiPlI8L3RleHQ+CiAgPHRleHQgeD0iMzAiIHk9IjY1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjciIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9ImJvbGQiIGxldHRlci1zcGFjaW5nPSIxIj5SRUFMVE9Swq48L3RleHQ+Cjwvc3ZnPgo=';
+// Base64-encoded logos for reliable html2canvas export (dark = #1a1a1a, white = #ffffff)
+const EQUAL_HOUSING_DARK = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0iIzFhMWExYSI+CiAgPHBhdGggZD0iTTQwIDVMNSAzNWgxMHYzNWg1MFYzNWgxMEw0MCA1em0tMTUgNjBWMzhoMzB2MjdIMjV6Ii8+CiAgPHJlY3QgeD0iMzAiIHk9IjQ0IiB3aWR0aD0iMjAiIGhlaWdodD0iMyIvPgogIDxyZWN0IHg9IjMwIiB5PSI1MSIgd2lkdGg9IjIwIiBoZWlnaHQ9IjMiLz4KICA8dGV4dCB4PSI0MCIgeT0iNzYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iYm9sZCI+RVFVQUwgSE9VU0lORzwvdGV4dD4KICA8dGV4dCB4PSI0MCIgeT0iODIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNSIgZm9udC1mYW1pbHk9IkFyaWFsIj5PUFBPUlRVTklUWTwvdGV4dD4KPC9zdmc+Cg==';
+const EQUAL_HOUSING_WHITE = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0iI2ZmZmZmZiI+CiAgPHBhdGggZD0iTTQwIDVMNSAzNWgxMHYzNWg1MFYzNWgxMEw0MCA1em0tMTUgNjBWMzhoMzB2MjdIMjV6Ii8+CiAgPHJlY3QgeD0iMzAiIHk9IjQ0IiB3aWR0aD0iMjAiIGhlaWdodD0iMyIvPgogIDxyZWN0IHg9IjMwIiB5PSI1MSIgd2lkdGg9IjIwIiBoZWlnaHQ9IjMiLz4KICA8dGV4dCB4PSI0MCIgeT0iNzYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iYm9sZCI+RVFVQUwgSE9VU0lORzwvdGV4dD4KICA8dGV4dCB4PSI0MCIgeT0iODIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNSIgZm9udC1mYW1pbHk9IkFyaWFsIj5PUFBPUlRVTklUWTwvdGV4dD4KPC9zdmc+';
+const REALTOR_DARK = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA3MCIgZmlsbD0iIzFhMWExYSI+CiAgPHJlY3QgeD0iNSIgeT0iNSIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMyIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjMiIGZpbGw9Im5vbmUiLz4KICA8dGV4dCB4PSIzMCIgeT0iNDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzIiIGZvbnQtZmFtaWx5PSJzZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiPlI8L3RleHQ+CiAgPHRleHQgeD0iMzAiIHk9IjY1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjciIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9ImJvbGQiIGxldHRlci1zcGFjaW5nPSIxIj5SRUFMVE9Swq48L3RleHQ+Cjwvc3ZnPgo=';
+const REALTOR_WHITE = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA3MCIgZmlsbD0iI2ZmZmZmZiI+CiAgPHJlY3QgeD0iNSIgeT0iNSIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMyIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjMiIGZpbGw9Im5vbmUiLz4KICA8dGV4dCB4PSIzMCIgeT0iNDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzIiIGZvbnQtZmFtaWx5PSJzZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiPlI8L3RleHQ+CiAgPHRleHQgeD0iMzAiIHk9IjY1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjciIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9ImJvbGQiIGxldHRlci1zcGFjaW5nPSIxIj5SRUFMVE9Swq48L3RleHQ+Cjwvc3ZnPg==';
+
+/** Convert an SVG data URL to a PNG data URL via offscreen canvas (html2canvas can't render SVGs) */
+function svgToPng(svgDataUrl: string, w: number, h: number): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(svgDataUrl); // fallback to SVG if conversion fails
+    img.src = svgDataUrl;
+  });
+}
 
 // Monthly hero images — luxury interiors/exteriors
 export const HERO_IMAGES: readonly string[] = [
@@ -333,6 +351,19 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
   const footerText = isDark ? 'rgba(255,255,255,0.35)' : '#9ca3af';
   const footerBorder = COLORS.gold;
 
+  // Pre-render SVG logos as PNGs for html2canvas compatibility
+  const [pngLogos, setPngLogos] = useState({ eqDark: EQUAL_HOUSING_DARK, eqWhite: EQUAL_HOUSING_WHITE, reDark: REALTOR_DARK, reWhite: REALTOR_WHITE });
+  useEffect(() => {
+    Promise.all([
+      svgToPng(EQUAL_HOUSING_DARK, 160, 160),
+      svgToPng(EQUAL_HOUSING_WHITE, 160, 160),
+      svgToPng(REALTOR_DARK, 120, 140),
+      svgToPng(REALTOR_WHITE, 120, 140),
+    ]).then(([eqDark, eqWhite, reDark, reWhite]) =>
+      setPngLogos({ eqDark, eqWhite, reDark, reWhite })
+    );
+  }, []);
+
   const kpiItems = sothebys ? [
     { label: 'Volume', value: formatDollar(sothebys.dollarVolume), accent: true },
     { label: 'Sales', value: Math.round(sothebys.totalSales).toLocaleString(), accent: false },
@@ -363,10 +394,10 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
             className="uppercase font-medium"
             style={{
               fontFamily: 'Inter, sans-serif',
-              fontSize: 5,
+              fontSize: 6.5,
               letterSpacing: '0.3em',
-              color: 'rgba(255,255,255,0.7)',
-              marginBottom: 4,
+              color: 'rgba(255,255,255,0.75)',
+              marginBottom: 5,
             }}
           >
             Market Intelligence Report
@@ -375,21 +406,21 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
             className="text-white font-bold uppercase"
             style={{
               fontFamily: 'Playfair Display, serif',
-              fontSize: 22,
+              fontSize: 28,
               lineHeight: 1.1,
               textShadow: '0 1px 8px rgba(0,0,0,0.35)',
             }}
           >
             {market.marketName}
           </h1>
-          <div style={{ width: 28, height: 1.5, backgroundColor: COLORS.gold, marginTop: 7, opacity: 0.7 }} />
+          <div style={{ width: 36, height: 2, backgroundColor: COLORS.gold, marginTop: 8, opacity: 0.8 }} />
         </div>
 
         <img
           src="/images/logos/sothebys-branding.png"
           alt="Russ Lyon Sotheby's International Realty"
           className="absolute z-10"
-          style={{ height: '70%', width: 'auto', top: '50%', right: 26, transform: 'translateY(-50%)' }}
+          style={{ height: '70%', width: 'auto', top: 0, right: 26 }}
           crossOrigin="anonymous"
         />
       </div>
@@ -498,16 +529,14 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
         {/* Bottom-left: Equal Housing + Realtor logos */}
         <div className="flex items-center gap-2">
           <img
-            src={EQUAL_HOUSING_DATA_URL}
+            src={isDark ? pngLogos.eqWhite : pngLogos.eqDark}
             alt="Equal Housing Opportunity"
             style={{ height: 18, opacity: isDark ? 0.5 : 0.7 }}
-            className={isDark ? 'invert' : ''}
           />
           <img
-            src={REALTOR_DATA_URL}
+            src={isDark ? pngLogos.reWhite : pngLogos.reDark}
             alt="Realtor"
             style={{ height: 16, opacity: isDark ? 0.5 : 0.7 }}
-            className={isDark ? 'invert' : ''}
           />
         </div>
 

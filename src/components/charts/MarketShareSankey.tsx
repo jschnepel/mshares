@@ -67,13 +67,9 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
       .attr('id', 'sankey-rlsir-node')
       .attr('x1', '0%').attr('y1', '0%')
       .attr('x2', '0%').attr('y2', '100%');
-    if (darkBg) {
-      nodeGrad.append('stop').attr('offset', '0%').attr('stop-color', '#d4c4a0');
-      nodeGrad.append('stop').attr('offset', '100%').attr('stop-color', COLORS.gold);
-    } else {
-      nodeGrad.append('stop').attr('offset', '0%').attr('stop-color', '#1a5276');
-      nodeGrad.append('stop').attr('offset', '100%').attr('stop-color', COLORS.navy);
-    }
+    // Same navy gradient for RLSIR node in both themes
+    nodeGrad.append('stop').attr('offset', '0%').attr('stop-color', '#1a5276');
+    nodeGrad.append('stop').attr('offset', '100%').attr('stop-color', COLORS.navy);
 
     // Title
     svg.append('text')
@@ -107,13 +103,9 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
         .attr('gradientUnits', 'userSpaceOnUse')
         .attr('x1', link.source?.x1 ?? 0)
         .attr('x2', link.target?.x0 ?? 0);
-      if (darkBg) {
-        grad.append('stop').attr('offset', '0%').attr('stop-color', COLORS.gold).attr('stop-opacity', 0.3);
-        grad.append('stop').attr('offset', '100%').attr('stop-color', COLORS.gold).attr('stop-opacity', 0.7);
-      } else {
-        grad.append('stop').attr('offset', '0%').attr('stop-color', COLORS.navy).attr('stop-opacity', 0.2);
-        grad.append('stop').attr('offset', '100%').attr('stop-color', COLORS.gold).attr('stop-opacity', 0.7);
-      }
+      // Same navy-to-gold gradient for RLSIR links in both themes
+      grad.append('stop').attr('offset', '0%').attr('stop-color', COLORS.navy).attr('stop-opacity', darkBg ? 0.4 : 0.2);
+      grad.append('stop').attr('offset', '100%').attr('stop-color', COLORS.gold).attr('stop-opacity', 0.7);
     });
 
     // Links
@@ -124,7 +116,7 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
       .attr('d', sankeyLinkHorizontal())
       .attr('stroke', (d: any, i: number) => {
         if (d.target?.isSothebys) return `url(#sankey-link-${i})`;
-        return lightText ? 'rgba(255,255,255,0.12)' : '#d1d5db';
+        return darkBg ? 'rgba(209,213,219,0.18)' : (mode === 'preview' ? 'rgba(255,255,255,0.12)' : '#d1d5db');
       })
       .attr('stroke-width', (d: any) => Math.max(1, d.width ?? 1))
       .attr('fill', 'none')
@@ -140,9 +132,9 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
       .attr('width', (d: any) => (d.x1 ?? 0) - (d.x0 ?? 0))
       .attr('height', (d: any) => Math.max(1, (d.y1 ?? 0) - (d.y0 ?? 0)))
       .attr('fill', (d: any) => {
-        if (d.name === 'Total Market') return darkBg ? COLORS.gold : COLORS.navy;
+        if (d.name === 'Total Market') return darkBg ? '#1a5276' : COLORS.navy;
         if (d.isSothebys) return 'url(#sankey-rlsir-node)';
-        return darkBg ? 'rgba(255,255,255,0.3)' : COLORS.grayBar;
+        return COLORS.grayBar;
       })
       .attr('rx', 3)
       .attr('stroke', (d: any) => d.isSothebys ? COLORS.gold : 'none')
@@ -160,9 +152,11 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
       .attr('font-family', 'Inter')
       .attr('font-size', labelSize)
       .attr('font-weight', (d: any) => d.isSothebys ? '600' : '400')
-      .attr('fill', (d: any) =>
-        d.isSothebys ? (lightText ? COLORS.gold : COLORS.navy) : (lightText ? '#9ca3af' : '#4b5563')
-      )
+      .attr('fill', (d: any) => {
+        if (d.isSothebys) return darkBg ? COLORS.gold : COLORS.navy;
+        if (darkBg) return '#9ca3af';
+        return mode === 'preview' ? '#d1d5db' : '#4b5563';
+      })
       .text((d: any) => {
         if (d.name === 'Total Market') return '100%';
         return `${d.name ?? ''} (${(d.value ?? 0).toFixed(1)}%)`;

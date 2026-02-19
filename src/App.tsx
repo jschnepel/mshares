@@ -19,7 +19,7 @@ function App() {
           <div className="flex-1 flex min-h-0">
             {/* Left panel: Upload + Queue + Export */}
             <div className="w-72 shrink-0 border-r border-navy-medium flex flex-col bg-navy-deep/50">
-              <div className="p-4 space-y-2">
+              <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2">
                 {/* Brand header */}
                 <div className="mb-3">
                   <h1 className="font-serif text-lg text-cream font-semibold leading-tight">
@@ -34,7 +34,7 @@ function App() {
                 <BatchQueue />
               </div>
 
-              <div className="mt-auto">
+              <div className="shrink-0">
                 <ExportControls />
               </div>
             </div>
