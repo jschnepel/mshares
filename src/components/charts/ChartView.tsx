@@ -362,16 +362,13 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
           </h1>
         </div>
 
-        <div
-          className="absolute top-0 right-0 flex flex-col items-center justify-center px-4 py-3 z-10"
-          style={{ backgroundColor: COLORS.navy, minWidth: '140px' }}
-        >
-          <span className="text-white text-sm font-serif font-bold tracking-wide">Russ Lyon</span>
-          <div className="w-10 border-t my-0.5" style={{ borderColor: COLORS.gold }} />
-          <span className="text-white/85 text-[8px] font-serif">Sotheby's International Realty</span>
-          <span className="text-[7px] font-semibold mt-1.5" style={{ color: COLORS.gold }}>russlyon.com</span>
-          <span className="text-white/50 text-[6px]">480.585.7070</span>
-        </div>
+        <img
+          src="/images/logos/sothebys-branding.png"
+          alt="Russ Lyon Sotheby's International Realty"
+          className="absolute top-0 right-0 z-10"
+          style={{ height: '38%', width: 'auto' }}
+          crossOrigin="anonymous"
+        />
       </div>
 
       {/* ── Bento content area — fills remaining space ── */}
