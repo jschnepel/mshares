@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="#1a1a1a">
+  <path d="M40 5L5 35h10v35h50V35h10L40 5zm-15 60V38h30v27H25z"/>
+  <rect x="30" y="44" width="20" height="3"/>
+  <rect x="30" y="51" width="20" height="3"/>
+  <text x="40" y="76" text-anchor="middle" font-size="6" font-family="Arial" font-weight="bold">EQUAL HOUSING</text>
+  <text x="40" y="82" text-anchor="middle" font-size="5" font-family="Arial">OPPORTUNITY</text>
+</svg>
