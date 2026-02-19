@@ -10,6 +10,10 @@ import { COLORS } from '@/lib/constants';
 import { generateExecutiveSummary } from '@/lib/summaryGenerator';
 import type { VisualizationType, ShareType, PageTheme } from '@/types';
 
+// Base64-encoded logos for reliable html2canvas export
+const EQUAL_HOUSING_DATA_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0iIzFhMWExYSI+CiAgPHBhdGggZD0iTTQwIDVMNSAzNWgxMHYzNWg1MFYzNWgxMEw0MCA1em0tMTUgNjBWMzhoMzB2MjdIMjV6Ii8+CiAgPHJlY3QgeD0iMzAiIHk9IjQ0IiB3aWR0aD0iMjAiIGhlaWdodD0iMyIvPgogIDxyZWN0IHg9IjMwIiB5PSI1MSIgd2lkdGg9IjIwIiBoZWlnaHQ9IjMiLz4KICA8dGV4dCB4PSI0MCIgeT0iNzYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iYm9sZCI+RVFVQUwgSE9VU0lORzwvdGV4dD4KICA8dGV4dCB4PSI0MCIgeT0iODIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNSIgZm9udC1mYW1pbHk9IkFyaWFsIj5PUFBPUlRVTklUWTwvdGV4dD4KPC9zdmc+Cg==';
+const REALTOR_DATA_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MCA3MCIgZmlsbD0iIzFhMWExYSI+CiAgPHJlY3QgeD0iNSIgeT0iNSIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMyIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjMiIGZpbGw9Im5vbmUiLz4KICA8dGV4dCB4PSIzMCIgeT0iNDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iMzIiIGZvbnQtZmFtaWx5PSJzZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiPlI8L3RleHQ+CiAgPHRleHQgeD0iMzAiIHk9IjY1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjciIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC13ZWlnaHQ9ImJvbGQiIGxldHRlci1zcGFjaW5nPSIxIj5SRUFMVE9Swq48L3RleHQ+Cjwvc3ZnPgo=';
+
 // Monthly hero images — luxury interiors/exteriors
 export const HERO_IMAGES: readonly string[] = [
   'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1600',
@@ -476,18 +480,16 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
         {/* Bottom-left: Equal Housing + Realtor logos */}
         <div className="flex items-center gap-2">
           <img
-            src="/images/logos/equal-housing.svg"
+            src={EQUAL_HOUSING_DATA_URL}
             alt="Equal Housing Opportunity"
             style={{ height: 18, opacity: isDark ? 0.5 : 0.7 }}
             className={isDark ? 'invert' : ''}
-            crossOrigin="anonymous"
           />
           <img
-            src="/images/logos/realtor.svg"
+            src={REALTOR_DATA_URL}
             alt="Realtor"
             style={{ height: 16, opacity: isDark ? 0.5 : 0.7 }}
             className={isDark ? 'invert' : ''}
-            crossOrigin="anonymous"
           />
         </div>
 
