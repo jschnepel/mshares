@@ -18,6 +18,10 @@ interface MarketStore {
   showSummary: boolean;
   pageTheme: PageTheme;
 
+  // Date range (applies to all exports)
+  dateStart: string;
+  dateEnd: string;
+
   // Export state
   exportFormat: ExportFormat;
   isExporting: boolean;
@@ -25,6 +29,8 @@ interface MarketStore {
 
   // Actions
   addFiles: (files: File[]) => Promise<void>;
+  updateMarketTitle: (id: string, title: string) => void;
+  setDateRange: (start: string, end: string) => void;
   removeMarket: (id: string) => void;
   clearAll: () => void;
   setSelectedMarket: (id: string | null) => void;
@@ -62,6 +68,8 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
   showKPI: false,
   showSummary: false,
   pageTheme: 'light' as PageTheme,
+  dateStart: '',
+  dateEnd: '',
   exportFormat: 'png',
   isExporting: false,
   exportProgress: 0,
@@ -88,6 +96,12 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
       set({ isProcessing: false });
     }
   },
+
+  setDateRange: (start, end) => set({ dateStart: start, dateEnd: end }),
+
+  updateMarketTitle: (id, title) => set(state => ({
+    markets: state.markets.map(m => m.id === id ? { ...m, chartTitle: title || undefined } : m),
+  })),
 
   removeMarket: (id) => set(state => {
     const newSelected = new Set(state.selectedIds);

@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { CheckCircle, AlertTriangle, XCircle, X, Eye } from 'lucide-react';
 import type { MarketData } from '@/types';
 import { useMarketStore } from '@/store/marketStore';
@@ -8,7 +9,30 @@ interface FileCardProps {
 }
 
 export function FileCard({ market, index }: FileCardProps) {
-  const { selectedIds, toggleSelected, setSelectedMarket, selectedMarketId, removeMarket, openPreview } = useMarketStore();
+  const { selectedIds, toggleSelected, setSelectedMarket, selectedMarketId, removeMarket, openPreview, updateMarketTitle } = useMarketStore();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const startEditing = () => {
+    setEditValue(market.chartTitle ?? market.marketName);
+    setIsEditing(true);
+  };
+
+  const commitEdit = () => {
+    const trimmed = editValue.trim();
+    updateMarketTitle(market.id, trimmed === market.marketName ? '' : trimmed);
+    setIsEditing(false);
+  };
+
+  const cancelEdit = () => setIsEditing(false);
   const isSelected = selectedIds.has(market.id);
   const isActive = selectedMarketId === market.id;
   const isUsable = market.status !== 'error' && market.availableViews.length > 0;
@@ -80,10 +104,29 @@ export function FileCard({ market, index }: FileCardProps) {
         </div>
       </div>
 
-      {/* Market name */}
-      <h3 className="font-serif text-sm text-cream font-medium leading-tight mb-1 truncate">
-        {market.marketName}
-      </h3>
+      {/* Market name — double-click to edit */}
+      {isEditing ? (
+        <input
+          ref={inputRef}
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={commitEdit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commitEdit();
+            if (e.key === 'Escape') cancelEdit();
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className="w-full font-serif text-sm text-cream font-medium leading-tight mb-1 bg-navy-medium/60 border border-gold/30 rounded px-1.5 py-0.5 outline-none focus:border-gold/60"
+        />
+      ) : (
+        <h3
+          onDoubleClick={(e) => { e.stopPropagation(); startEditing(); }}
+          className="font-serif text-sm text-cream font-medium leading-tight mb-1 truncate cursor-text"
+          title="Double-click to rename"
+        >
+          {market.chartTitle ?? market.marketName}
+        </h3>
+      )}
 
       {/* Sotheby's share */}
       {market.sothebysData && (

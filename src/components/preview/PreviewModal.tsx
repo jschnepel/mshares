@@ -144,7 +144,7 @@ export function PreviewModal() {
             <div className="relative overflow-hidden" style={{ height: '32%' }}>
               <img
                 src={getHeroImage()}
-                alt={market.marketName}
+                alt={market.chartTitle ?? market.marketName}
                 className="absolute inset-0 w-full h-full object-cover"
                 crossOrigin="anonymous"
               />
@@ -154,7 +154,7 @@ export function PreviewModal() {
               {/* Market name */}
               <div className="absolute bottom-0 left-0 p-6 z-10">
                 <h1 className="text-white font-bold uppercase leading-[0.95]" style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.5rem, 4vw, 3rem)' }}>
-                  {market.marketName.split(' ').map((word, i) => (
+                  {(market.chartTitle ?? market.marketName).split(' ').map((word, i) => (
                     <span key={i}>{word}<br /></span>
                   ))}
                 </h1>
@@ -235,7 +235,7 @@ export function PreviewModal() {
                 }}
                 className={`w-2 h-2 rounded-full transition-all
                   ${i === previewIndex ? 'bg-gold w-4' : 'bg-navy-medium hover:bg-gray-muted'}`}
-                title={m.marketName}
+                title={m.chartTitle ?? m.marketName}
               />
             ))}
           </div>

@@ -8,6 +8,7 @@ import { ExecutiveSummary, ExecutiveSummarySkeleton } from '@/components/metrics
 import { BarChart3, Grid3x3, GitBranch, Eye, EyeOff, LayoutDashboard, FileText, ToggleLeft, ToggleRight, Sun, Moon } from 'lucide-react';
 import { COLORS } from '@/lib/constants';
 import { generateExecutiveSummary } from '@/lib/summaryGenerator';
+import { DateRangePicker } from '@/components/controls/DateRangePicker';
 import type { VisualizationType, ShareType, PageTheme } from '@/types';
 
 // Base64-encoded logos for reliable html2canvas export (dark = #1a1a1a, white = #ffffff)
@@ -51,7 +52,7 @@ export const HERO_IMAGES: readonly string[] = [
 export function ChartView() {
   const { getCurrentMarket, shareType, setShareType, visualization, setVisualization, isProcessing, markets, showKPI, setShowKPI, showSummary, setShowSummary, pageTheme, setPageTheme } = useMarketStore();
   const market = getCurrentMarket();
-  const [previewMode, setPreviewMode] = useState(false);
+  const [previewMode, setPreviewMode] = useState(true);
 
   // Empty state
   if (!isProcessing && markets.length === 0) {
@@ -110,25 +111,7 @@ export function ChartView() {
     <div className="flex-1 p-6 space-y-4 overflow-y-auto">
       {/* Controls */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {/* Visualization tabs */}
-          <div className="flex items-center gap-1">
-            {vizTabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setVisualization(tab.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                  ${visualization === tab.id
-                    ? 'bg-gold/15 text-gold border border-gold/20'
-                    : 'text-gray-muted hover:text-cream hover:bg-navy-light border border-transparent'
-                  }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
+        <div className="flex items-center gap-2">
           {/* Preview toggle */}
           <button
             onClick={() => setPreviewMode(!previewMode)}
@@ -141,6 +124,9 @@ export function ChartView() {
             {previewMode ? <EyeOff size={14} /> : <Eye size={14} />}
             {previewMode ? 'Editor View' : 'Preview'}
           </button>
+
+          {/* Date range picker */}
+          <DateRangePicker />
         </div>
 
         {/* Share type toggle */}
@@ -334,6 +320,7 @@ function formatDollar(val: number): string {
 }
 
 export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI, showSummary, pageTheme = 'light' }: BrandedPageProps) {
+  const { dateStart, dateEnd } = useMarketStore();
   const summary = useMemo(
     () => showSummary ? generateExecutiveSummary(market, shareType) : '',
     [market, shareType, showSummary]
@@ -411,7 +398,7 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
               textShadow: '0 1px 8px rgba(0,0,0,0.35)',
             }}
           >
-            {market.marketName}
+            {market.chartTitle ?? market.marketName}
           </h1>
           <div style={{ width: 36, height: 2, backgroundColor: COLORS.gold, marginTop: 8, opacity: 0.8 }} />
         </div>
@@ -545,7 +532,7 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
           className="text-right leading-tight"
           style={{ fontSize: 7, color: footerText, maxWidth: '65%' }}
         >
-          ARMLS data compiled through BrokerMetrics® — Total $ Volume by Broker ($1M and up) — Metro Phoenix — 03/01/2024 - 04/02/2025
+          ARMLS data compiled through BrokerMetrics® — Total $ Volume by Broker ($1M and up) — Metro Phoenix — {dateStart && dateEnd ? `${dateStart} - ${dateEnd}` : '03/01/2024 - 04/02/2025'}
         </p>
       </div>
 

@@ -42,6 +42,7 @@ export interface MarketData {
   warnings: string[];
   errors: string[];
   processedAt: number;
+  chartTitle?: string;
 }
 
 export interface KPIMetrics {

@@ -63,7 +63,7 @@ export function MetricRibbon() {
     <div className="h-14 bg-navy-light/50 border-b border-navy-medium flex items-center px-2 overflow-x-auto gap-1">
       <div className="flex items-center gap-1 px-3 mr-2">
         <span className="font-serif text-cream text-sm font-semibold truncate max-w-[200px]">
-          {market.marketName}
+          {market.chartTitle ?? market.marketName}
         </span>
       </div>
       <div className="w-px h-8 bg-navy-medium" />

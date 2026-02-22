@@ -14,7 +14,7 @@ function formatNumber(val: number): string {
 export function generateExecutiveSummary(data: MarketData, shareType: ShareType): string {
   const sothebys = data.sothebysData;
   if (!sothebys) {
-    return `Market data for ${data.marketName} has been processed. Russ Lyon Sotheby's International Realty was not found in this dataset.`;
+    return `Market data for ${data.chartTitle ?? data.marketName} has been processed. Russ Lyon Sotheby's International Realty was not found in this dataset.`;
   }
 
   const share = shareType === 'dollar' ? sothebys.marketShareDollar : sothebys.marketShareUnits;
@@ -38,7 +38,7 @@ export function generateExecutiveSummary(data: MarketData, shareType: ShareType)
 
   // Opening — market position
   parts.push(
-    `Russ Lyon Sotheby's International Realty commands ${share.toFixed(1)}% of the ${data.marketName} market by ${shareLabel}`
+    `Russ Lyon Sotheby's International Realty commands ${share.toFixed(1)}% of the ${data.chartTitle ?? data.marketName} market by ${shareLabel}`
   );
 
   if (shareType === 'dollar' && sothebys.dollarVolume > 0) {
@@ -70,7 +70,7 @@ export function generateExecutiveSummary(data: MarketData, shareType: ShareType)
   // Total market context
   if (sothebys.totalSales > 0) {
     parts.push(
-      `Across ${formatNumber(Math.round(sothebys.totalSales))} total transactions, the firm demonstrates consistent market leadership in the ${data.marketName} area.`
+      `Across ${formatNumber(Math.round(sothebys.totalSales))} total transactions, the firm demonstrates consistent market leadership in the ${data.chartTitle ?? data.marketName} area.`
     );
   }
 
