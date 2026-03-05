@@ -13,7 +13,7 @@ import {
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Bar, Line, Doughnut, Pie, Scatter } from 'react-chartjs-2';
-import type { SimpleChartType, ColumnDataType } from '@/types';
+import type { SimpleChartType } from '@/types';
 import type { SimpleChartData } from '@/store/builderStore';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Filler, Tooltip, Legend, ChartDataLabels);
