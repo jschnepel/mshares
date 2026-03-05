@@ -177,8 +177,9 @@ export function BrandedChartPage({
               legend: { display: showLegend, position: 'right' as const, labels: { color: textColor, font: { size: 9 }, padding: 8 } },
               datalabels: {
                 ...datalabelPlugin,
-                formatter: (val: number, ctx: { dataset: { data: number[] } }) => {
-                  const total = ctx.dataset.data.reduce((s: number, v: number) => s + v, 0);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                formatter: (val: number, ctx: any) => {
+                  const total = (ctx.dataset.data as number[]).reduce((s: number, v: number) => s + v, 0);
                   return total > 0 ? `${((val / total) * 100).toFixed(1)}%` : '';
                 },
               },

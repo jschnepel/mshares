@@ -3,7 +3,7 @@ import { ColorPicker } from './ColorPicker';
 import { GradientBuilder } from './GradientBuilder';
 import { defaultThemeConfig } from '@/lib/themeDefaults';
 import { Sun, Moon, RotateCcw } from 'lucide-react';
-import type { PageTheme, ThemeConfig, FontChoice, ColorPalette, GradientConfig } from '@/types';
+import type { PageTheme, FontChoice, ColorPalette, GradientConfig } from '@/types';
 
 const HEADING_FONTS: FontChoice[] = [
   'Playfair Display',

@@ -40,7 +40,7 @@ function svgToPng(svgDataUrl: string, w: number, h: number): Promise<string> {
 
 
 export function ChartView() {
-  const { getCurrentMarket, shareType, setShareType, visualization, setVisualization, isProcessing, markets, showKPI, setShowKPI, showSummary, setShowSummary, pageTheme, setPageTheme, heroImages, themeConfig, kpiLayout, setKPILayout } = useMarketStore();
+  const { getCurrentMarket, shareType, setShareType, visualization, setVisualization, isProcessing, markets, showKPI, setShowKPI, showSummary, setShowSummary, pageTheme, heroImages, themeConfig, kpiLayout, setKPILayout } = useMarketStore();
   const kpiLayouts: { id: import('@/types').KPILayout; label: string }[] = [
     { id: 'grid-3col', label: '3-Col Grid' },
     { id: 'grid-2col', label: '2-Col Grid' },

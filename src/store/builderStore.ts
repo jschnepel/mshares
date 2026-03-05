@@ -8,8 +8,6 @@ import type {
 import { parseGenericFile } from '@/lib/genericParser';
 import { safeFloat } from '@/lib/utils';
 
-const DEFAULT_SERIES_COLORS = ['#002349', '#BFA67A', '#6b7f94', '#9ca3af', '#e5a855', '#7c9eb8'];
-
 function maxValues(type: SimpleChartType): number {
   if (type === 'pie' || type === 'donut') return 1;
   if (type === 'scatter') return 2;
