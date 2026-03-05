@@ -18,6 +18,12 @@
 
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
+  --font-lora: 'Lora', Georgia, serif;
+  --font-dm-serif: 'DM Serif Display', Georgia, serif;
+  --font-montserrat: 'Montserrat', system-ui, sans-serif;
+  --font-raleway: 'Raleway', system-ui, sans-serif;
+  --font-source-sans: 'Source Sans 3', system-ui, sans-serif;
 }
 
 body {

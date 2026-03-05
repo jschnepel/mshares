@@ -1,4 +1,4 @@
-import type { MarketData } from '@/types';
+import type { MarketData, KPILayout } from '@/types';
 import { DollarSign, Home, Clock, Ruler, Target, TrendingUp } from 'lucide-react';
 
 function formatDollar(val: number): string {
@@ -10,9 +10,17 @@ function formatDollar(val: number): string {
 
 interface KPICardsProps {
   market: MarketData;
+  layout?: KPILayout;
 }
 
-export function KPICards({ market }: KPICardsProps) {
+const GRID_CLASS: Record<KPILayout, string> = {
+  'grid-3col': 'grid grid-cols-3 gap-3',
+  'grid-2col': 'grid grid-cols-2 gap-3',
+  'horizontal-strip': 'flex gap-2 overflow-x-auto',
+  'card-stack': 'flex flex-col gap-2',
+};
+
+export function KPICards({ market, layout = 'grid-3col' }: KPICardsProps) {
   const s = market.sothebysData;
   if (!s) return null;
 
@@ -25,21 +33,24 @@ export function KPICards({ market }: KPICardsProps) {
     { icon: <Target size={18} />, label: 'SP / LP Ratio', value: s.saleToListRatio > 0 ? `${(s.saleToListRatio * 100).toFixed(1)}%` : '—', highlight: false },
   ];
 
+  const isStrip = layout === 'horizontal-strip';
+  const isStack = layout === 'card-stack';
+
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className={GRID_CLASS[layout]}>
       {cards.map(card => (
         <div
           key={card.label}
-          className="glass rounded-lg p-3 flex items-start gap-3"
+          className={`glass rounded-lg p-3 ${isStrip ? 'min-w-[120px] flex flex-col items-center text-center gap-1' : isStack ? 'flex items-center gap-4' : 'flex items-start gap-3'}`}
         >
-          <div className={`mt-0.5 ${card.highlight ? 'text-gold' : 'text-gray-muted'}`}>
+          <div className={`${isStrip ? '' : 'mt-0.5'} ${card.highlight ? 'text-gold' : 'text-gray-muted'}`}>
             {card.icon}
           </div>
-          <div>
+          <div className={isStack ? 'flex items-center gap-4 flex-1' : ''}>
             <div className="text-[10px] uppercase tracking-widest text-gray-muted mb-0.5">
               {card.label}
             </div>
-            <div className={`text-lg font-semibold ${card.highlight ? 'text-gold' : 'text-cream'}`}>
+            <div className={`${isStack ? 'text-xl' : 'text-lg'} font-semibold ${card.highlight ? 'text-gold' : 'text-cream'}`}>
               {card.value}
             </div>
           </div>

@@ -1,35 +1,17 @@
 import { useEffect, useCallback, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Download, BarChart3, Grid3x3, GitBranch } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download, BarChart3, Grid3x3, GitBranch, Circle, Minus } from 'lucide-react';
 import { useMarketStore } from '@/store/marketStore';
 import { MarketShareBar } from '@/components/charts/MarketShareBar';
 import { MarketShareTreemap } from '@/components/charts/MarketShareTreemap';
 import { MarketShareSankey } from '@/components/charts/MarketShareSankey';
+import { MarketShareDonut } from '@/components/charts/MarketShareDonut';
+import { MarketShareLollipop } from '@/components/charts/MarketShareLollipop';
 import { COLORS } from '@/lib/constants';
 import type { VisualizationType, ShareType } from '@/types';
 
-// Monthly hero images — luxury interiors/exteriors (Unsplash, 1600w)
-const HERO_IMAGES: readonly string[] = [
-  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?auto=format&fit=crop&q=80&w=1600',
-];
-
-function getHeroImage() {
-  return HERO_IMAGES[new Date().getMonth()];
-}
-
 export function PreviewModal() {
   const {
-    previewOpen, closePreview, navigatePreview, getPreviewMarket, getReadyMarkets, previewIndex,
+    previewOpen, closePreview, navigatePreview, getPreviewMarket, getReadyMarkets, previewIndex, heroImages,
   } = useMarketStore();
 
   const [viz, setViz] = useState<VisualizationType>('bar');
@@ -63,10 +45,14 @@ export function PreviewModal() {
 
   if (!previewOpen || !market) return null;
 
+  const heroState = heroImages.get(market.id) ?? { url: '', crop: { x: 50, y: 50 } };
+
   const vizTabs: { id: VisualizationType; icon: React.ReactNode; label: string }[] = [
     { id: 'bar', icon: <BarChart3 size={14} />, label: 'Bar Chart' },
     { id: 'treemap', icon: <Grid3x3 size={14} />, label: 'Treemap' },
     { id: 'sankey', icon: <GitBranch size={14} />, label: 'Sankey' },
+    { id: 'donut', icon: <Circle size={14} />, label: 'Donut' },
+    { id: 'lollipop', icon: <Minus size={14} />, label: 'Lollipop' },
   ];
 
   return (
@@ -143,9 +129,10 @@ export function PreviewModal() {
             {/* Hero band */}
             <div className="relative overflow-hidden" style={{ height: '32%' }}>
               <img
-                src={getHeroImage()}
+                src={heroState.url}
                 alt={market.chartTitle ?? market.marketName}
                 className="absolute inset-0 w-full h-full object-cover"
+                style={{ objectPosition: `${heroState.crop.x}% ${heroState.crop.y}%` }}
                 crossOrigin="anonymous"
               />
               {/* Gradient overlay */}
@@ -184,6 +171,8 @@ export function PreviewModal() {
                 {viz === 'bar' && <MarketShareBar market={market} shareType={shareType} mode="branded" />}
                 {viz === 'treemap' && <MarketShareTreemap market={market} shareType={shareType} />}
                 {viz === 'sankey' && <MarketShareSankey market={market} shareType={shareType} />}
+                {viz === 'donut' && <MarketShareDonut market={market} shareType={shareType} mode="branded" />}
+                {viz === 'lollipop' && <MarketShareLollipop market={market} shareType={shareType} mode="branded" />}
               </div>
             </div>
 

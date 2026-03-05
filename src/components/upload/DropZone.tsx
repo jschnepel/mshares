@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Upload, FileSpreadsheet } from 'lucide-react';
 import { useMarketStore } from '@/store/marketStore';
+import { useProjectStore } from '@/store/projectStore';
 
 const ACCEPTED_TYPES = [
   'text/csv',
@@ -17,13 +18,16 @@ function isAcceptedFile(file: File): boolean {
 export function DropZone() {
   const [isDragging, setIsDragging] = useState(false);
   const { addFiles, isProcessing } = useMarketStore();
+  const clearReuploadFlag = useProjectStore(s => s.clearReuploadFlag);
 
   const handleFiles = useCallback(async (fileList: FileList | File[]) => {
     const files = Array.from(fileList).filter(isAcceptedFile);
     if (files.length > 0) {
+      // GAP 6: Clear reupload banner when new files are uploaded
+      clearReuploadFlag();
       await addFiles(files);
     }
-  }, [addFiles]);
+  }, [addFiles, clearReuploadFlag]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();

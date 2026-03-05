@@ -1,7 +1,8 @@
 import { createRoot } from 'react-dom/client';
 import html2canvas from 'html2canvas-pro';
-import { BrandedPage, HERO_IMAGES } from '@/components/charts/ChartView';
-import type { MarketData, ShareType, ExportFormat, VisualizationType, PageTheme } from '@/types';
+import { BrandedPage } from '@/components/charts/ChartView';
+import { useMarketStore } from '@/store/marketStore';
+import type { MarketData, ShareType, ExportFormat, VisualizationType, PageTheme, ColorPalette, GradientConfig } from '@/types';
 import {
   exportBatchAsZip,
   type BatchExportItem,
@@ -19,6 +20,10 @@ export interface ExportConfig {
   showKPI: boolean;
   showSummary: boolean;
   pageTheme: PageTheme;
+  palette?: ColorPalette;
+  gradient?: GradientConfig;
+  fontHeading?: string;
+  fontBody?: string;
 }
 
 /**
@@ -35,18 +40,19 @@ function preloadImage(src: string): Promise<void> {
 }
 
 /**
- * Renders the full branded page offscreen at preview dimensions, captures at 3x.
+ * Renders the full branded page offscreen at preview dimensions, captures at 4x.
  */
 async function renderAndCapture(
   market: MarketData,
   shareType: ShareType,
   config: ExportConfig,
+  heroUrl: string,
+  heroCrop: { x: number; y: number },
 ): Promise<string> {
-  const heroUrl = HERO_IMAGES[new Date().getMonth()];
   const bgColor = config.pageTheme === 'dark' ? '#002349' : '#ffffff';
 
   // Preload the hero image to avoid blank captures
-  await preloadImage(heroUrl);
+  if (heroUrl) await preloadImage(heroUrl);
 
   // Create hidden container at preview dimensions
   const container = document.createElement('div');
@@ -65,16 +71,21 @@ async function renderAndCapture(
       shareType={shareType}
       visualization={config.visualization}
       heroUrl={heroUrl}
+      heroCrop={heroCrop}
       showKPI={config.showKPI}
       showSummary={config.showSummary}
       pageTheme={config.pageTheme}
+      palette={config.palette}
+      gradient={config.gradient}
+      fontHeading={config.fontHeading}
+      fontBody={config.fontBody}
     />
   );
 
   // Wait for React render + Chart.js animation (disabled in branded mode) + image paint
   await new Promise(r => setTimeout(r, 2000));
 
-  // Capture at 3x scale for high-resolution output
+  // Capture at 4x scale for high-resolution output
   const canvas = await html2canvas(container, {
     width: RENDER_WIDTH,
     height: RENDER_HEIGHT,
@@ -106,6 +117,7 @@ export async function exportBatchReports(
 ): Promise<void> {
   const exportConfig = config ?? { visualization: 'bar', showKPI: false, showSummary: false, pageTheme: 'light' as PageTheme };
   const items: BatchExportItem[] = [];
+  const store = useMarketStore.getState();
 
   for (let i = 0; i < markets.length; i++) {
     const market = markets[i];
@@ -115,7 +127,10 @@ export async function exportBatchReports(
 
     if (!marketShareType) continue;
 
-    const chartDataUrl = await renderAndCapture(market, marketShareType, exportConfig);
+    // Get the per-market hero image + crop from the store
+    const heroState = store.getHeroImage(market.id);
+
+    const chartDataUrl = await renderAndCapture(market, marketShareType, exportConfig, heroState.url, heroState.crop);
     items.push({ market, shareType: marketShareType, chartDataUrl });
     onProgress?.(i + 1, markets.length);
   }

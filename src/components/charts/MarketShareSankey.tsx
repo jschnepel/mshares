@@ -1,7 +1,7 @@
 import { useMemo, useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import { sankey as d3Sankey, sankeyLinkHorizontal } from 'd3-sankey';
-import type { MarketData, ShareType } from '@/types';
+import type { MarketData, ShareType, ColorPalette, GradientConfig } from '@/types';
 import { COLORS, MAX_BROKERAGES_PREVIEW } from '@/lib/constants';
 
 interface SankeyProps {
@@ -10,9 +10,13 @@ interface SankeyProps {
   maxBrokerages?: number;
   mode?: 'preview' | 'export' | 'branded';
   darkBg?: boolean;
+  palette?: ColorPalette;
+  gradient?: GradientConfig;
+  fontHeading?: string;
+  fontBody?: string;
 }
 
-export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'preview', darkBg = false }: SankeyProps) {
+export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'preview', darkBg = false, palette, gradient, fontHeading, fontBody }: SankeyProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const max = maxBrokerages ?? MAX_BROKERAGES_PREVIEW;
 
@@ -67,15 +71,19 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
       .attr('id', 'sankey-rlsir-node')
       .attr('x1', '0%').attr('y1', '0%')
       .attr('x2', '0%').attr('y2', '100%');
-    // Same navy gradient for RLSIR node in both themes
-    nodeGrad.append('stop').attr('offset', '0%').attr('stop-color', '#1a5276');
-    nodeGrad.append('stop').attr('offset', '100%').attr('stop-color', COLORS.navy);
+    if (gradient?.enabled && gradient) {
+      nodeGrad.append('stop').attr('offset', '0%').attr('stop-color', gradient.colorStart);
+      nodeGrad.append('stop').attr('offset', '100%').attr('stop-color', gradient.colorEnd);
+    } else {
+      nodeGrad.append('stop').attr('offset', '0%').attr('stop-color', '#1a5276');
+      nodeGrad.append('stop').attr('offset', '100%').attr('stop-color', palette?.rlsirPrimary ?? COLORS.navy);
+    }
 
     // Title
     svg.append('text')
       .attr('x', width / 2).attr('y', 20)
       .attr('text-anchor', 'middle')
-      .attr('font-family', 'Playfair Display')
+      .attr('font-family', fontHeading ?? 'Playfair Display')
       .attr('font-size', titleSize)
       .attr('font-weight', '600')
       .attr('fill', titleColor)
@@ -103,9 +111,8 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
         .attr('gradientUnits', 'userSpaceOnUse')
         .attr('x1', link.source?.x1 ?? 0)
         .attr('x2', link.target?.x0 ?? 0);
-      // Same navy-to-gold gradient for RLSIR links in both themes
-      grad.append('stop').attr('offset', '0%').attr('stop-color', COLORS.navy).attr('stop-opacity', darkBg ? 0.4 : 0.2);
-      grad.append('stop').attr('offset', '100%').attr('stop-color', COLORS.gold).attr('stop-opacity', 0.7);
+      grad.append('stop').attr('offset', '0%').attr('stop-color', palette?.rlsirPrimary ?? COLORS.navy).attr('stop-opacity', darkBg ? 0.4 : 0.2);
+      grad.append('stop').attr('offset', '100%').attr('stop-color', palette?.accent ?? COLORS.gold).attr('stop-opacity', 0.7);
     });
 
     // Links
@@ -132,12 +139,12 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
       .attr('width', (d: any) => (d.x1 ?? 0) - (d.x0 ?? 0))
       .attr('height', (d: any) => Math.max(1, (d.y1 ?? 0) - (d.y0 ?? 0)))
       .attr('fill', (d: any) => {
-        if (d.name === 'Total Market') return darkBg ? '#1a5276' : COLORS.navy;
+        if (d.name === 'Total Market') return darkBg ? '#1a5276' : (palette?.rlsirPrimary ?? COLORS.navy);
         if (d.isSothebys) return 'url(#sankey-rlsir-node)';
-        return COLORS.grayBar;
+        return palette?.competitorBase ?? COLORS.grayBar;
       })
       .attr('rx', 3)
-      .attr('stroke', (d: any) => d.isSothebys ? COLORS.gold : 'none')
+      .attr('stroke', (d: any) => d.isSothebys ? (palette?.accent ?? COLORS.gold) : 'none')
       .attr('stroke-width', (d: any) => d.isSothebys ? 1 : 0);
 
     // Labels
@@ -149,11 +156,11 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
       .attr('x', (d: any) => (d.x1 ?? 0) + 8)
       .attr('y', (d: any) => ((d.y0 ?? 0) + (d.y1 ?? 0)) / 2)
       .attr('dy', '0.35em')
-      .attr('font-family', 'Inter')
+      .attr('font-family', fontBody ?? 'Inter')
       .attr('font-size', labelSize)
       .attr('font-weight', (d: any) => d.isSothebys ? '600' : '400')
       .attr('fill', (d: any) => {
-        if (d.isSothebys) return darkBg ? COLORS.gold : COLORS.navy;
+        if (d.isSothebys) return darkBg ? (palette?.accent ?? COLORS.gold) : (palette?.rlsirPrimary ?? COLORS.navy);
         if (darkBg) return '#9ca3af';
         return mode === 'preview' ? '#d1d5db' : '#4b5563';
       })
@@ -161,7 +168,7 @@ export function MarketShareSankey({ market, shareType, maxBrokerages, mode = 'pr
         if (d.name === 'Total Market') return '100%';
         return `${d.name ?? ''} (${(d.value ?? 0).toFixed(1)}%)`;
       });
-  }, [graphData, shareType, mode, darkBg]);
+  }, [graphData, shareType, mode, darkBg, palette, gradient, fontHeading, fontBody]);
 
   return (
     <svg ref={svgRef} className="w-full h-full" style={{ minHeight: mode === 'export' ? 500 : undefined }} />

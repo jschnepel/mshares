@@ -1,6 +1,6 @@
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
-import type { MarketData, ShareType } from '@/types';
+import type { MarketData, ShareType, ColorPalette, GradientConfig } from '@/types';
 import { COLORS, MAX_BROKERAGES_PREVIEW } from '@/lib/constants';
 
 interface TreemapProps {
@@ -9,11 +9,30 @@ interface TreemapProps {
   maxBrokerages?: number;
   mode?: 'preview' | 'export' | 'branded';
   darkBg?: boolean;
+  palette?: ColorPalette;
+  gradient?: GradientConfig;
+  fontHeading?: string;
+  fontBody?: string;
 }
 
-export function MarketShareTreemap({ market, shareType, maxBrokerages, mode = 'preview', darkBg = false }: TreemapProps) {
+export function MarketShareTreemap({ market, shareType, maxBrokerages, mode = 'preview', darkBg = false, palette, gradient, fontHeading, fontBody }: TreemapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const max = maxBrokerages ?? MAX_BROKERAGES_PREVIEW;
+  const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
+
+  // Track container dimensions via ResizeObserver
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) {
+        setDims(prev => (prev?.w === Math.round(width) && prev?.h === Math.round(height)) ? prev : { w: Math.round(width), h: Math.round(height) });
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const data = useMemo(() => {
     const sorted = [...market.brokerages].sort((a, b) =>
@@ -29,13 +48,13 @@ export function MarketShareTreemap({ market, shareType, maxBrokerages, mode = 'p
   }, [market, shareType, max]);
 
   useEffect(() => {
-    if (!svgRef.current || data.length === 0) return;
+    if (!svgRef.current || data.length === 0 || !dims) return;
 
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const width = svgRef.current.clientWidth || 700;
-    const height = svgRef.current.clientHeight || 450;
+    const width = dims.w;
+    const height = dims.h;
     const lightText = darkBg || mode === 'preview';
     const titleColor = lightText ? COLORS.cream : COLORS.navy;
     const titleSize = mode === 'export' ? 26 : 14;
@@ -44,11 +63,22 @@ export function MarketShareTreemap({ market, shareType, maxBrokerages, mode = 'p
     const defs = svg.append('defs');
 
     // RLSIR cell gradient (diagonal)
+    const gDir = gradient?.direction ?? 'diagonal';
+    const gx1 = gDir === 'vertical' ? '0%' : '0%';
+    const gy1 = '0%';
+    const gx2 = gDir === 'vertical' ? '0%' : '100%';
+    const gy2 = gDir === 'horizontal' ? '0%' : '100%';
     const rlsirGrad = defs.append('linearGradient')
       .attr('id', 'treemap-rlsir')
-      .attr('x1', '0%').attr('y1', '0%')
-      .attr('x2', '100%').attr('y2', '100%');
-    if (darkBg) {
+      .attr('x1', gx1).attr('y1', gy1)
+      .attr('x2', gx2).attr('y2', gy2);
+
+    const useGradient = gradient ? gradient.enabled : true;
+    if (useGradient && gradient) {
+      rlsirGrad.append('stop').attr('offset', '0%').attr('stop-color', gradient.colorStart);
+      if (gradient.colorMid) rlsirGrad.append('stop').attr('offset', '50%').attr('stop-color', gradient.colorMid);
+      rlsirGrad.append('stop').attr('offset', '100%').attr('stop-color', gradient.colorEnd);
+    } else if (darkBg) {
       rlsirGrad.append('stop').attr('offset', '0%').attr('stop-color', '#9e8a64');
       rlsirGrad.append('stop').attr('offset', '50%').attr('stop-color', COLORS.gold);
       rlsirGrad.append('stop').attr('offset', '100%').attr('stop-color', '#d4c4a0');
@@ -62,7 +92,7 @@ export function MarketShareTreemap({ market, shareType, maxBrokerages, mode = 'p
     svg.append('text')
       .attr('x', width / 2).attr('y', 20)
       .attr('text-anchor', 'middle')
-      .attr('font-family', 'Playfair Display')
+      .attr('font-family', fontHeading ?? 'Playfair Display')
       .attr('font-size', titleSize)
       .attr('font-weight', '600')
       .attr('fill', titleColor)
@@ -86,8 +116,8 @@ export function MarketShareTreemap({ market, shareType, maxBrokerages, mode = 'p
     // Competitor color scale — graduated shades by rank
     const competitorLeaves = leaves.filter((d: any) => !d.data.isSothebys);
     const compScale = darkBg
-      ? d3.scaleLinear<string>().domain([0, Math.max(1, competitorLeaves.length - 1)]).range(['rgba(255,255,255,0.45)', 'rgba(255,255,255,0.15)'])
-      : d3.scaleLinear<string>().domain([0, Math.max(1, competitorLeaves.length - 1)]).range(['#6b7f94', '#b8c4ce']);
+      ? d3.scaleLinear<string>().domain([0, Math.max(1, competitorLeaves.length - 1)]).range([palette?.competitorBase ?? 'rgba(255,255,255,0.45)', palette?.competitorFade ?? 'rgba(255,255,255,0.15)'])
+      : d3.scaleLinear<string>().domain([0, Math.max(1, competitorLeaves.length - 1)]).range([palette?.competitorBase ?? '#6b7f94', palette?.competitorFade ?? '#b8c4ce']);
     let compIdx = 0;
 
     // Cells
@@ -106,7 +136,7 @@ export function MarketShareTreemap({ market, shareType, maxBrokerages, mode = 'p
         return color;
       })
       .attr('rx', 4)
-      .attr('stroke', (d: any) => d.data.isSothebys ? COLORS.gold : 'none')
+      .attr('stroke', (d: any) => d.data.isSothebys ? (palette?.accent ?? COLORS.gold) : 'none')
       .attr('stroke-width', (d: any) => d.data.isSothebys ? 1.5 : 0);
 
     // Name + value labels — use tspan wrapping to show full brokerage names
@@ -150,7 +180,7 @@ export function MarketShareTreemap({ market, shareType, maxBrokerages, mode = 'p
 
       const textEl = g.append('text')
         .attr('text-anchor', 'middle')
-        .attr('font-family', 'Inter')
+        .attr('font-family', fontBody ?? 'Inter')
         .attr('font-size', fontSize)
         .attr('font-weight', d.data.isSothebys ? '600' : '500')
         .attr('fill', COLORS.white);
@@ -169,11 +199,11 @@ export function MarketShareTreemap({ market, shareType, maxBrokerages, mode = 'p
           .attr('y', startY + visibleLines.length * lineHeight + 2)
           .attr('font-weight', 'bold')
           .attr('font-size', mode === 'export' ? 16 : 11)
-          .attr('fill', d.data.isSothebys ? COLORS.gold : 'rgba(255,255,255,0.85)')
+          .attr('fill', d.data.isSothebys ? (palette?.accent ?? COLORS.gold) : 'rgba(255,255,255,0.85)')
           .text(`${(d.data.value as number).toFixed(1)}%`);
       }
     });
-  }, [data, shareType, mode, darkBg]);
+  }, [data, shareType, mode, darkBg, palette, gradient, fontHeading, fontBody, dims]);
 
   return (
     <svg ref={svgRef} className="w-full h-full" style={{ minHeight: mode === 'export' ? 500 : undefined }} />

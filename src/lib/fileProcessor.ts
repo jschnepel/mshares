@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import type { BrokerageData, FileFormat, MarketData } from '@/types';
 import { SOTHEBYS_PATTERNS, SOTHEBYS_DISPLAY_NAME, FH_COLUMNS } from './constants';
+import { safeFloat } from './utils';
 
 let fileCounter = 0;
 
@@ -46,13 +47,6 @@ function deriveMarketName(fileName: string): string {
   return name || fileName;
 }
 
-function safeFloat(val: unknown): number {
-  if (val === null || val === undefined || val === '') return 0;
-  const str = String(val).replace(/[$,%]/g, '').trim();
-  const num = parseFloat(str);
-  return isNaN(num) ? 0 : num;
-}
-
 /**
  * If a market share value is between 0 and 1, it's a decimal from Excel.
  * Multiply by 100 to get percentage. This ONLY happens here in the processor.
@@ -68,7 +62,7 @@ function normalizePercentage(val: number, needsMultiplication: boolean): number 
   return val;
 }
 
-function detectFormat(headers: string[]): FileFormat {
+export function detectFormat(headers: string[]): FileFormat {
   // Check for ColumnType2: "Mkt %" in column I (index 8)
   if (headers.length > 8 && /mkt\s*%/i.test(headers[8])) {
     return 'ColumnType2';

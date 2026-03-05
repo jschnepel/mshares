@@ -2,7 +2,7 @@ import { useMemo, useRef, useEffect } from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Bar } from 'react-chartjs-2';
-import type { MarketData, ShareType } from '@/types';
+import type { MarketData, ShareType, ColorPalette, GradientConfig } from '@/types';
 import { COLORS, FONT_SCALE, MAX_BROKERAGES_PREVIEW, CHART_EXPORT } from '@/lib/constants';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
@@ -15,9 +15,13 @@ interface MarketShareBarProps {
   mode?: 'preview' | 'export' | 'branded';
   /** When true, use light-on-dark colors (for dark page themes) */
   darkBg?: boolean;
+  palette?: ColorPalette;
+  gradient?: GradientConfig;
+  fontHeading?: string;
+  fontBody?: string;
 }
 
-export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'preview', darkBg = false }: MarketShareBarProps) {
+export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'preview', darkBg = false, palette, gradient, fontHeading, fontBody }: MarketShareBarProps) {
   const chartRef = useRef<ChartJS<'bar'>>(null);
   const max = maxBrokerages ?? MAX_BROKERAGES_PREVIEW;
 
@@ -56,19 +60,20 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
       }),
       values: top.map(b => shareType === 'dollar' ? b.marketShareDollar : b.marketShareUnits),
       colors: top.map(b => {
-        if (b.isSothebys) return darkBg ? COLORS.gold : COLORS.navy;
+        if (b.isSothebys) return darkBg ? (palette?.rlsirSecondary ?? COLORS.gold) : (palette?.rlsirPrimary ?? COLORS.navy);
         // Graduated competitor colors — higher rank = more prominent
         const t = competitorCount > 1 ? cIdx / (competitorCount - 1) : 0;
         cIdx++;
         if (darkBg) {
-          return `rgba(255,255,255,${0.45 - t * 0.22})`;
+          const baseAlpha = 0.45 - t * 0.22;
+          return palette?.competitorBase ? palette.competitorBase : `rgba(255,255,255,${baseAlpha})`;
         }
-        if (mode === 'preview') return COLORS.grayBar;
+        if (mode === 'preview') return palette?.competitorBase ?? COLORS.grayBar;
         const gray = Math.round(130 + t * 55);
         return `rgb(${gray},${gray},${gray})`;
       }),
       borderColors: top.map(b => b.isSothebys
-        ? (darkBg ? COLORS.gold : COLORS.navy)
+        ? (darkBg ? (palette?.rlsirSecondary ?? COLORS.gold) : (palette?.rlsirPrimary ?? COLORS.navy))
         : 'transparent'),
       sothebysIdx: top.findIndex(b => b.isSothebys),
     };
@@ -84,23 +89,36 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
       const { ctx, chartArea } = chart;
       if (!chartArea) return;
 
-      const gradient = ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
-      if (darkBg) {
-        gradient.addColorStop(0, '#9e8a64');
-        gradient.addColorStop(0.6, COLORS.gold);
-        gradient.addColorStop(1, '#d4c4a0');
+      // Use dynamic gradient config if provided, else hardcoded defaults
+      const gCfg = gradient;
+      const useGradient = gCfg ? gCfg.enabled : true;
+      if (!useGradient) return;
+
+      let x1 = chartArea.left, y1 = 0, x2 = chartArea.right, y2 = 0;
+      if (gCfg?.direction === 'vertical') { x1 = 0; y1 = chartArea.top; x2 = 0; y2 = chartArea.bottom; }
+      else if (gCfg?.direction === 'diagonal') { y1 = chartArea.top; y2 = chartArea.bottom; }
+
+      const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+      if (gCfg) {
+        grad.addColorStop(0, gCfg.colorStart);
+        if (gCfg.colorMid) grad.addColorStop(0.5, gCfg.colorMid);
+        grad.addColorStop(1, gCfg.colorEnd);
+      } else if (darkBg) {
+        grad.addColorStop(0, '#9e8a64');
+        grad.addColorStop(0.6, COLORS.gold);
+        grad.addColorStop(1, '#d4c4a0');
       } else {
-        gradient.addColorStop(0, '#001530');
-        gradient.addColorStop(0.5, COLORS.navy);
-        gradient.addColorStop(1, '#1a5276');
+        grad.addColorStop(0, '#001530');
+        grad.addColorStop(0.5, COLORS.navy);
+        grad.addColorStop(1, '#1a5276');
       }
 
       const ds = chart.data.datasets[0];
       if (ds?.backgroundColor) {
-        (ds.backgroundColor as unknown[])[sothebysIdx] = gradient;
+        (ds.backgroundColor as unknown[])[sothebysIdx] = grad;
       }
     }
-  }), [mode, darkBg, sothebysIdx]);
+  }), [mode, darkBg, sothebysIdx, gradient]);
 
   // Trigger bar animation on data change
   useEffect(() => {
@@ -157,7 +175,7 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
           drawBorder: false,
         },
         ticks: {
-          font: { size: fonts.ticks, family: 'Inter' },
+          font: { size: fonts.ticks, family: fontBody ?? 'Inter' },
           color: '#9ca3af',
           callback: (val: string | number) => `${val}%`,
         },
@@ -169,7 +187,7 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
         grid: { display: false },
         ticks: {
           autoSkip: false,
-          font: { size: mode === 'branded' ? 9 : fonts.ticks, family: 'Inter', weight: '500' as const },
+          font: { size: mode === 'branded' ? 9 : fonts.ticks, family: fontBody ?? 'Inter', weight: '500' as const },
           color: isClean ? (darkBg ? '#d1d5db' : '#1f2937') : '#d1d5db',
           crossAlign: 'far' as const,
           padding: isClean ? 8 : 8,
@@ -183,7 +201,7 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
         text: chartTitle,
         font: {
           size: fonts.title,
-          family: 'Playfair Display',
+          family: fontHeading ?? 'Playfair Display',
           weight: 'bold' as const,
         },
         color: COLORS.cream,
@@ -192,8 +210,8 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
       tooltip: {
         enabled: !isClean,
         backgroundColor: COLORS.navy,
-        titleFont: { family: 'Inter', weight: '600' as const },
-        bodyFont: { family: 'Inter' },
+        titleFont: { family: fontBody ?? 'Inter', weight: '600' as const },
+        bodyFont: { family: fontBody ?? 'Inter' },
         borderColor: COLORS.gold,
         borderWidth: 1,
         callbacks: {
@@ -204,7 +222,7 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
         formatter: (val: number) => `${val.toFixed(1)}%`,
         font: {
           size: mode === 'branded' ? 10 : fonts.datalabels,
-          family: 'Inter',
+          family: fontBody ?? 'Inter',
           weight: 'bold' as const,
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

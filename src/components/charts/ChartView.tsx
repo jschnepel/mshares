@@ -3,13 +3,18 @@ import { useMarketStore } from '@/store/marketStore';
 import { MarketShareBar } from './MarketShareBar';
 import { MarketShareTreemap } from './MarketShareTreemap';
 import { MarketShareSankey } from './MarketShareSankey';
+import { MarketShareDonut } from './MarketShareDonut';
+import { MarketShareLollipop } from './MarketShareLollipop';
 import { KPICards, KPICardsSkeleton } from '@/components/metrics/KPICards';
 import { ExecutiveSummary, ExecutiveSummarySkeleton } from '@/components/metrics/ExecutiveSummary';
-import { BarChart3, Grid3x3, GitBranch, Eye, EyeOff, LayoutDashboard, FileText, ToggleLeft, ToggleRight, Sun, Moon } from 'lucide-react';
+import { DropZone } from '@/components/upload/DropZone';
+import { BarChart3, Grid3x3, GitBranch, Eye, EyeOff, LayoutDashboard, FileText, ToggleLeft, ToggleRight, Circle, Minus } from 'lucide-react';
+import { ThemePanel } from '@/components/controls/ThemePanel';
 import { COLORS } from '@/lib/constants';
 import { generateExecutiveSummary } from '@/lib/summaryGenerator';
 import { DateRangePicker } from '@/components/controls/DateRangePicker';
-import type { VisualizationType, ShareType, PageTheme } from '@/types';
+import { HeroImagePicker } from '@/components/controls/HeroImagePicker';
+import type { VisualizationType, ShareType, PageTheme, ColorPalette, GradientConfig } from '@/types';
 
 // Base64-encoded logos for reliable html2canvas export (dark = #1a1a1a, white = #ffffff)
 const EQUAL_HOUSING_DARK = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0iIzFhMWExYSI+CiAgPHBhdGggZD0iTTQwIDVMNSAzNWgxMHYzNWg1MFYzNWgxMEw0MCA1em0tMTUgNjBWMzhoMzB2MjdIMjV6Ii8+CiAgPHJlY3QgeD0iMzAiIHk9IjQ0IiB3aWR0aD0iMjAiIGhlaWdodD0iMyIvPgogIDxyZWN0IHg9IjMwIiB5PSI1MSIgd2lkdGg9IjIwIiBoZWlnaHQ9IjMiLz4KICA8dGV4dCB4PSI0MCIgeT0iNzYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNiIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXdlaWdodD0iYm9sZCI+RVFVQUwgSE9VU0lORzwvdGV4dD4KICA8dGV4dCB4PSI0MCIgeT0iODIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNSIgZm9udC1mYW1pbHk9IkFyaWFsIj5PUFBPUlRVTklUWTwvdGV4dD4KPC9zdmc+Cg==';
@@ -33,24 +38,15 @@ function svgToPng(svgDataUrl: string, w: number, h: number): Promise<string> {
   });
 }
 
-// Monthly hero images — luxury interiors/exteriors
-export const HERO_IMAGES: readonly string[] = [
-  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&q=80&w=1600',
-  'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?auto=format&fit=crop&q=80&w=1600',
-];
 
 export function ChartView() {
-  const { getCurrentMarket, shareType, setShareType, visualization, setVisualization, isProcessing, markets, showKPI, setShowKPI, showSummary, setShowSummary, pageTheme, setPageTheme } = useMarketStore();
+  const { getCurrentMarket, shareType, setShareType, visualization, setVisualization, isProcessing, markets, showKPI, setShowKPI, showSummary, setShowSummary, pageTheme, setPageTheme, heroImages, themeConfig, kpiLayout, setKPILayout } = useMarketStore();
+  const kpiLayouts: { id: import('@/types').KPILayout; label: string }[] = [
+    { id: 'grid-3col', label: '3-Col Grid' },
+    { id: 'grid-2col', label: '2-Col Grid' },
+    { id: 'horizontal-strip', label: 'Strip' },
+    { id: 'card-stack', label: 'Stack' },
+  ];
   const market = getCurrentMarket();
   const [previewMode, setPreviewMode] = useState(true);
 
@@ -58,12 +54,15 @@ export function ChartView() {
   if (!isProcessing && markets.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-lg">
           <div className="w-20 h-20 rounded-2xl bg-navy-light/50 border border-navy-medium flex items-center justify-center mx-auto mb-4">
             <BarChart3 size={32} className="text-gray-muted" />
           </div>
-          <h3 className="font-serif text-xl text-cream/60 mb-2">No Market Data</h3>
-          <p className="text-sm text-gray-muted">Upload CSV or Excel files to begin analysis</p>
+          <h3 className="font-serif text-xl text-cream/60 mb-2">Market Shares</h3>
+          <p className="text-sm text-gray-muted mb-6">Drop market share files to begin analysis</p>
+          <div className="max-w-xs mx-auto">
+            <DropZone />
+          </div>
         </div>
       </div>
     );
@@ -103,9 +102,11 @@ export function ChartView() {
     { id: 'bar', icon: <BarChart3 size={14} />, label: 'Bar Chart' },
     { id: 'treemap', icon: <Grid3x3 size={14} />, label: 'Treemap' },
     { id: 'sankey', icon: <GitBranch size={14} />, label: 'Sankey' },
+    { id: 'donut', icon: <Circle size={14} />, label: 'Donut' },
+    { id: 'lollipop', icon: <Minus size={14} />, label: 'Lollipop' },
   ];
 
-  const heroUrl = HERO_IMAGES[new Date().getMonth()];
+  const heroState = heroImages.get(market.id) ?? { url: '', crop: { x: 50, y: 50 } };
 
   return (
     <div className="flex-1 p-6 space-y-4 overflow-y-auto">
@@ -152,7 +153,10 @@ export function ChartView() {
         <div className="flex gap-4">
 
           {/* Left config sidebar */}
-          <div className="w-52 shrink-0 space-y-4">
+          <div className="w-52 shrink-0 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)]">
+
+            {/* Hero Image */}
+            <HeroImagePicker marketId={market.id} />
 
             {/* Chart Type */}
             <div className="glass rounded-lg p-3">
@@ -197,6 +201,23 @@ export function ChartView() {
                   </span>
                   {showKPI ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                 </button>
+                {showKPI && (
+                  <div className="flex gap-1 pl-6">
+                    {kpiLayouts.map(l => (
+                      <button
+                        key={l.id}
+                        onClick={() => setKPILayout(l.id)}
+                        className={`px-1.5 py-1 rounded text-[9px] font-medium transition-all
+                          ${kpiLayout === l.id
+                            ? 'bg-gold/15 text-gold border border-gold/20'
+                            : 'text-gray-muted hover:text-cream border border-transparent'
+                          }`}
+                      >
+                        {l.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <button
                   onClick={() => setShowSummary(!showSummary)}
                   className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all
@@ -214,31 +235,8 @@ export function ChartView() {
               </div>
             </div>
 
-            {/* Theme */}
-            <div className="glass rounded-lg p-3">
-              <span className="text-[10px] uppercase tracking-widest text-gold font-semibold mb-2.5 block">
-                Theme
-              </span>
-              <div className="space-y-1">
-                {([
-                  { id: 'light' as PageTheme, icon: <Sun size={14} />, label: 'Light' },
-                  { id: 'dark' as PageTheme, icon: <Moon size={14} />, label: 'Dark' },
-                ]).map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setPageTheme(t.id)}
-                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium transition-all
-                      ${pageTheme === t.id
-                        ? 'bg-gold/15 text-gold border border-gold/20'
-                        : 'text-gray-muted hover:text-cream hover:bg-navy-light/50 border border-transparent'
-                      }`}
-                  >
-                    {t.icon}
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Theme Panel (colors, gradients, fonts) */}
+            <ThemePanel />
 
             {/* Share type */}
             <div className="glass rounded-lg p-3">
@@ -269,10 +267,15 @@ export function ChartView() {
               market={market}
               shareType={shareType}
               visualization={visualization}
-              heroUrl={heroUrl}
+              heroUrl={heroState.url}
+              heroCrop={heroState.crop}
               showKPI={showKPI}
               showSummary={showSummary}
               pageTheme={pageTheme}
+              palette={themeConfig.palette}
+              gradient={themeConfig.rlsirGradient}
+              fontHeading={themeConfig.fontHeading}
+              fontBody={themeConfig.fontBody}
             />
           </div>
         </div>
@@ -281,13 +284,15 @@ export function ChartView() {
         <>
           {/* Chart */}
           <div className="rounded-xl p-4 shadow-lg bg-navy-deep border border-navy-medium" style={{ height: 460 }}>
-            {visualization === 'bar' && <MarketShareBar key={`bar-${market.id}-${shareType}`} market={market} shareType={shareType} />}
-            {visualization === 'treemap' && <MarketShareTreemap key={`treemap-${market.id}-${shareType}`} market={market} shareType={shareType} mode="preview" />}
-            {visualization === 'sankey' && <MarketShareSankey key={`sankey-${market.id}-${shareType}`} market={market} shareType={shareType} mode="preview" />}
+            {visualization === 'bar' && <MarketShareBar key={`bar-${market.id}-${shareType}`} market={market} shareType={shareType} palette={themeConfig.palette} gradient={themeConfig.rlsirGradient} fontHeading={themeConfig.fontHeading} fontBody={themeConfig.fontBody} />}
+            {visualization === 'treemap' && <MarketShareTreemap key={`treemap-${market.id}-${shareType}`} market={market} shareType={shareType} mode="preview" palette={themeConfig.palette} gradient={themeConfig.rlsirGradient} fontHeading={themeConfig.fontHeading} fontBody={themeConfig.fontBody} />}
+            {visualization === 'sankey' && <MarketShareSankey key={`sankey-${market.id}-${shareType}`} market={market} shareType={shareType} mode="preview" palette={themeConfig.palette} gradient={themeConfig.rlsirGradient} fontHeading={themeConfig.fontHeading} fontBody={themeConfig.fontBody} />}
+            {visualization === 'donut' && <MarketShareDonut key={`donut-${market.id}-${shareType}`} market={market} shareType={shareType} palette={themeConfig.palette} gradient={themeConfig.rlsirGradient} fontHeading={themeConfig.fontHeading} fontBody={themeConfig.fontBody} />}
+            {visualization === 'lollipop' && <MarketShareLollipop key={`lollipop-${market.id}-${shareType}`} market={market} shareType={shareType} mode="preview" palette={themeConfig.palette} gradient={themeConfig.rlsirGradient} fontHeading={themeConfig.fontHeading} fontBody={themeConfig.fontBody} />}
           </div>
 
           {/* KPI Cards */}
-          <KPICards market={market} />
+          <KPICards market={market} layout={kpiLayout} />
 
           {/* Executive Summary */}
           <ExecutiveSummary market={market} shareType={shareType} />
@@ -307,9 +312,14 @@ export interface BrandedPageProps {
   shareType: ShareType;
   visualization: VisualizationType;
   heroUrl: string;
+  heroCrop?: { x: number; y: number };
   showKPI: boolean;
   showSummary: boolean;
   pageTheme?: PageTheme;
+  palette?: ColorPalette;
+  gradient?: GradientConfig;
+  fontHeading?: string;
+  fontBody?: string;
 }
 
 function formatDollar(val: number): string {
@@ -319,7 +329,7 @@ function formatDollar(val: number): string {
   return `$${val.toFixed(0)}`;
 }
 
-export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI, showSummary, pageTheme = 'light' }: BrandedPageProps) {
+export function BrandedPage({ market, shareType, visualization, heroUrl, heroCrop, showKPI, showSummary, pageTheme = 'light', palette, gradient, fontHeading, fontBody }: BrandedPageProps) {
   const { dateStart, dateEnd } = useMarketStore();
   const summary = useMemo(
     () => showSummary ? generateExecutiveSummary(market, shareType) : '',
@@ -372,6 +382,7 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
           src={heroUrl}
           alt={market.marketName}
           className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: `${heroCrop?.x ?? 50}% ${heroCrop?.y ?? 50}%` }}
           crossOrigin="anonymous"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
@@ -380,7 +391,7 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
           <p
             className="uppercase font-medium"
             style={{
-              fontFamily: 'Inter, sans-serif',
+              fontFamily: `${fontBody ?? 'Inter'}, sans-serif`,
               fontSize: 6.5,
               letterSpacing: '0.3em',
               color: 'rgba(255,255,255,0.75)',
@@ -392,7 +403,7 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
           <h1
             className="text-white font-bold uppercase"
             style={{
-              fontFamily: 'Playfair Display, serif',
+              fontFamily: `${fontHeading ?? 'Playfair Display'}, serif`,
               fontSize: 28,
               lineHeight: 1.1,
               textShadow: '0 1px 8px rgba(0,0,0,0.35)',
@@ -429,10 +440,10 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
               <p
                 className="font-semibold uppercase mb-0.5"
                 style={{
-                  fontFamily: 'Inter, sans-serif',
+                  fontFamily: `${fontBody ?? 'Inter'}, sans-serif`,
                   fontSize: extraSections > 1 ? 7 : 8,
                   letterSpacing: '0.2em',
-                  color: isDark ? COLORS.navy : COLORS.gold,
+                  color: isDark ? COLORS.navy : (palette?.accent ?? COLORS.gold),
                 }}
               >
                 Market Overview
@@ -440,7 +451,7 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
               <p
                 className="italic leading-relaxed"
                 style={{
-                  fontFamily: 'Playfair Display, serif',
+                  fontFamily: `${fontHeading ?? 'Playfair Display'}, serif`,
                   fontSize: extraSections > 1 ? 7.5 : 8.5,
                   lineHeight: 1.55,
                   color: isDark ? '#374151' : 'rgba(255,255,255,0.85)',
@@ -468,9 +479,9 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
                     <div
                       className="font-bold leading-none"
                       style={{
-                        fontFamily: 'Playfair Display, serif',
+                        fontFamily: `${fontHeading ?? 'Playfair Display'}, serif`,
                         fontSize: extraSections > 1 ? 13 : 15,
-                        color: kpi.accent ? COLORS.gold : COLORS.cream,
+                        color: kpi.accent ? (palette?.accent ?? COLORS.gold) : COLORS.cream,
                       }}
                     >
                       {kpi.value}
@@ -478,7 +489,7 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
                     <div
                       className="uppercase font-medium"
                       style={{
-                        fontFamily: 'Inter, sans-serif',
+                        fontFamily: `${fontBody ?? 'Inter'}, sans-serif`,
                         fontSize: 5.5,
                         letterSpacing: '0.18em',
                         color: 'rgba(191,166,122,0.45)',
@@ -500,9 +511,11 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, showKPI
         {/* Chart — takes all remaining vertical space */}
         <div className="flex-1 min-h-0 py-1" style={{ paddingLeft: 16, paddingRight: 10 }}>
           <div className="h-full w-full">
-            {visualization === 'bar' && <MarketShareBar key={`branded-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} />}
-            {visualization === 'treemap' && <MarketShareTreemap key={`treemap-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} />}
-            {visualization === 'sankey' && <MarketShareSankey key={`sankey-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} />}
+            {visualization === 'bar' && <MarketShareBar key={`branded-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} />}
+            {visualization === 'treemap' && <MarketShareTreemap key={`treemap-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} />}
+            {visualization === 'sankey' && <MarketShareSankey key={`sankey-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} />}
+            {visualization === 'donut' && <MarketShareDonut key={`donut-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} />}
+            {visualization === 'lollipop' && <MarketShareLollipop key={`lollipop-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} />}
           </div>
         </div>
 
