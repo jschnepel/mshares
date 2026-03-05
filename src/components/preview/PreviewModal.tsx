@@ -1,17 +1,13 @@
 import { useEffect, useCallback, useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Download, BarChart3, Grid3x3, GitBranch, Circle, Minus } from 'lucide-react';
 import { useMarketStore } from '@/store/marketStore';
-import { MarketShareBar } from '@/components/charts/MarketShareBar';
-import { MarketShareTreemap } from '@/components/charts/MarketShareTreemap';
-import { MarketShareSankey } from '@/components/charts/MarketShareSankey';
-import { MarketShareDonut } from '@/components/charts/MarketShareDonut';
-import { MarketShareLollipop } from '@/components/charts/MarketShareLollipop';
-import { COLORS } from '@/lib/constants';
+import { BrandedPage } from '@/components/charts/ChartView';
 import type { VisualizationType, ShareType } from '@/types';
 
 export function PreviewModal() {
   const {
     previewOpen, closePreview, navigatePreview, getPreviewMarket, getReadyMarkets, previewIndex, heroImages,
+    showKPI, showSummary, pageTheme, themeConfig, visualization,
   } = useMarketStore();
 
   const [viz, setViz] = useState<VisualizationType>('bar');
@@ -20,6 +16,11 @@ export function PreviewModal() {
   const market = getPreviewMarket();
   const readyMarkets = getReadyMarkets();
   const total = readyMarkets.length;
+
+  // Sync viz with the main workspace visualization when modal opens
+  useEffect(() => {
+    if (previewOpen) setViz(visualization);
+  }, [previewOpen, visualization]);
 
   // Keyboard navigation
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -122,71 +123,22 @@ export function PreviewModal() {
           </div>
         </div>
 
-        {/* Branded page preview — matches export template */}
+        {/* Branded page preview — uses the same BrandedPage as the editor */}
         <div className="flex-1 overflow-y-auto flex justify-center p-6 bg-[#1a1a2e]">
-          <div className="w-full max-w-[600px] bg-white shadow-2xl" style={{ aspectRatio: '8.5 / 11' }}>
-
-            {/* Hero band */}
-            <div className="relative overflow-hidden" style={{ height: '32%' }}>
-              <img
-                src={heroState.url}
-                alt={market.chartTitle ?? market.marketName}
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ objectPosition: `${heroState.crop.x}% ${heroState.crop.y}%` }}
-                crossOrigin="anonymous"
-              />
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
-
-              {/* Market name */}
-              <div className="absolute bottom-0 left-0 p-6 z-10">
-                <h1 className="text-white font-bold uppercase leading-[0.95]" style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(1.5rem, 4vw, 3rem)' }}>
-                  {(market.chartTitle ?? market.marketName).split(' ').map((word, i) => (
-                    <span key={i}>{word}<br /></span>
-                  ))}
-                </h1>
-              </div>
-
-              {/* Navy branding box (top-right) */}
-              <div
-                className="absolute top-0 right-0 flex flex-col items-center justify-center px-4 py-3 z-10"
-                style={{ backgroundColor: COLORS.navy, minWidth: '140px' }}
-              >
-                <span className="text-white text-sm font-serif font-bold tracking-wide">Russ Lyon</span>
-                <div className="w-10 border-t my-0.5" style={{ borderColor: COLORS.gold }} />
-                <span className="text-white/85 text-[8px] font-serif">Sotheby's International Realty</span>
-                <span className="text-[7px] font-semibold mt-1.5" style={{ color: COLORS.gold }}>russlyon.com</span>
-                <span className="text-white/50 text-[6px]">480.585.7070</span>
-              </div>
-            </div>
-
-            {/* Tagline bar — reserved blank space */}
-            <div className="flex items-center justify-center px-4" style={{ height: '3.5%', backgroundColor: COLORS.navy }}>
-              {/* Blank — content added manually by broker */}
-            </div>
-
-            {/* Chart area */}
-            <div className="bg-white px-4 pt-2" style={{ height: '56%' }}>
-              <div className="h-full">
-                {viz === 'bar' && <MarketShareBar market={market} shareType={shareType} mode="branded" />}
-                {viz === 'treemap' && <MarketShareTreemap market={market} shareType={shareType} />}
-                {viz === 'sankey' && <MarketShareSankey market={market} shareType={shareType} />}
-                {viz === 'donut' && <MarketShareDonut market={market} shareType={shareType} mode="branded" />}
-                {viz === 'lollipop' && <MarketShareLollipop market={market} shareType={shareType} mode="branded" />}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-between px-4" style={{ height: '4.5%', borderTop: `2px solid ${COLORS.gold}` }}>
-              <div className="flex items-center gap-2">
-                <span className="text-[6px] text-gray-400">ARMLS data compiled through BrokerMetrics</span>
-              </div>
-              <span className="text-[6px] text-gray-400">
-                Russ Lyon Sotheby's International Realty
-              </span>
-            </div>
-
-          </div>
+          <BrandedPage
+            market={market}
+            shareType={shareType}
+            visualization={viz}
+            heroUrl={heroState.url}
+            heroCrop={heroState.crop}
+            showKPI={showKPI}
+            showSummary={showSummary}
+            pageTheme={pageTheme}
+            palette={themeConfig.palette}
+            gradient={themeConfig.rlsirGradient}
+            fontHeading={themeConfig.fontHeading}
+            fontBody={themeConfig.fontBody}
+          />
         </div>
 
         {/* Navigation arrows */}

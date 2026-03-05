@@ -40,13 +40,7 @@ function svgToPng(svgDataUrl: string, w: number, h: number): Promise<string> {
 
 
 export function ChartView() {
-  const { getCurrentMarket, shareType, setShareType, visualization, setVisualization, isProcessing, markets, showKPI, setShowKPI, showSummary, setShowSummary, pageTheme, heroImages, themeConfig, kpiLayout, setKPILayout } = useMarketStore();
-  const kpiLayouts: { id: import('@/types').KPILayout; label: string }[] = [
-    { id: 'grid-3col', label: '3-Col Grid' },
-    { id: 'grid-2col', label: '2-Col Grid' },
-    { id: 'horizontal-strip', label: 'Strip' },
-    { id: 'card-stack', label: 'Stack' },
-  ];
+  const { getCurrentMarket, shareType, setShareType, visualization, setVisualization, isProcessing, markets, showKPI, setShowKPI, showSummary, setShowSummary, pageTheme, heroImages, themeConfig, kpiLayout } = useMarketStore();
   const market = getCurrentMarket();
   const [previewMode, setPreviewMode] = useState(true);
 
@@ -201,23 +195,6 @@ export function ChartView() {
                   </span>
                   {showKPI ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
                 </button>
-                {showKPI && (
-                  <div className="flex gap-1 pl-6">
-                    {kpiLayouts.map(l => (
-                      <button
-                        key={l.id}
-                        onClick={() => setKPILayout(l.id)}
-                        className={`px-1.5 py-1 rounded text-[9px] font-medium transition-all
-                          ${kpiLayout === l.id
-                            ? 'bg-gold/15 text-gold border border-gold/20'
-                            : 'text-gray-muted hover:text-cream border border-transparent'
-                          }`}
-                      >
-                        {l.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
                 <button
                   onClick={() => setShowSummary(!showSummary)}
                   className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all

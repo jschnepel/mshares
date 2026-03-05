@@ -78,7 +78,7 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
         : 'transparent'),
       sothebysIdx: top.findIndex(b => b.isSothebys),
     };
-  }, [market, shareType, max, darkBg, mode]);
+  }, [market, shareType, max, darkBg, mode, palette]);
 
   // RLSIR gradient plugin — creates a horizontal gradient on the Sotheby's bar
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
