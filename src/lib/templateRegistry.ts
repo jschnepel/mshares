@@ -15,7 +15,7 @@ export const TEMPLATE_REGISTRY: TemplateDefinition[] = [
   {
     id: 'market-share',
     name: 'Market Share Report',
-    description: 'Branded reports for RLSIR markets with bar, treemap, sankey & donut charts.',
+    description: 'Branded market share reports with multiple chart types.',
     tagline: 'Drop FH or ColumnType2 files',
     isAvailable: true,
     wizardSteps: [],
@@ -25,8 +25,8 @@ export const TEMPLATE_REGISTRY: TemplateDefinition[] = [
   {
     id: 'custom-chart',
     name: 'Custom Chart',
-    description: 'Any data, any chart. Bar, Line, Area, Donut, Pie, Scatter.',
-    tagline: 'Drop file, pick columns, export branded chart',
+    description: 'Build any chart from any spreadsheet.',
+    tagline: 'Drop file, pick columns, export',
     isAvailable: false,
     wizardSteps: [],
     thumbnailGradient: 'from-blue-600/20 to-indigo-900/30',
@@ -35,8 +35,8 @@ export const TEMPLATE_REGISTRY: TemplateDefinition[] = [
   {
     id: 'comparison-dashboard',
     name: 'Comparison Dashboard',
-    description: 'Side-by-side metrics and trend analysis across multiple entities.',
-    tagline: 'Compare performance at a glance',
+    description: 'Side-by-side performance comparisons.',
+    tagline: 'Compare at a glance',
     isAvailable: false,
     wizardSteps: [],
     thumbnailGradient: 'from-emerald-600/20 to-teal-900/30',
@@ -44,8 +44,8 @@ export const TEMPLATE_REGISTRY: TemplateDefinition[] = [
   },
   {
     id: 'quick-summary',
-    name: 'Quick Summary Card',
-    description: 'Auto-generated KPI cards and highlights from any dataset.',
+    name: 'Quick Summary',
+    description: 'Auto-generated KPI cards from any dataset.',
     tagline: 'Key metrics in seconds',
     isAvailable: false,
     wizardSteps: [],

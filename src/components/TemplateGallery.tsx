@@ -1,7 +1,8 @@
-import { useCallback, useState, useRef } from 'react';
-import { BarChart3, Wrench, LayoutDashboard, FileText, FileSpreadsheet, Lock, Upload } from 'lucide-react';
+import { useCallback, useState, useRef, useMemo } from 'react';
+import { BarChart3, Wrench, LayoutDashboard, FileText, FileSpreadsheet, Lock, Upload, ArrowRight } from 'lucide-react';
 import { useProjectStore } from '@/store/projectStore';
 import { TEMPLATE_REGISTRY, type TemplateDefinition } from '@/lib/templateRegistry';
+import { getMonthlyHeroImages } from '@/lib/heroImages';
 import type { TemplateId } from '@/types';
 
 const ACCEPTED_TYPES = [
@@ -23,7 +24,7 @@ const ICON_MAP: Record<TemplateId, typeof BarChart3> = {
   'quick-summary': FileText,
 };
 
-function TemplateCard({ template }: { template: TemplateDefinition }) {
+function TemplateCard({ template, heroUrl }: { template: TemplateDefinition; heroUrl: string }) {
   const ingestFiles = useProjectStore(s => s.ingestFiles);
   const navigateToWorkspace = useProjectStore(s => s.navigateToWorkspace);
   const setProjectName = useProjectStore(s => s.setProjectName);
@@ -71,64 +72,83 @@ function TemplateCard({ template }: { template: TemplateDefinition }) {
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
-      className={`group relative rounded-2xl border-2 border-dashed transition-all duration-300 overflow-hidden
+      onClick={handleClick}
+      className={`group relative rounded-2xl overflow-hidden transition-all duration-300
         ${!template.isAvailable
-          ? 'border-navy-medium/50 opacity-60 cursor-default'
+          ? 'opacity-50 cursor-default'
           : isDragging
-            ? 'border-gold bg-gold/5 scale-[1.02]'
-            : 'border-navy-medium hover:border-gold/40 hover:scale-[1.02] cursor-pointer'
+            ? 'scale-[1.03] ring-2 ring-gold'
+            : 'hover:scale-[1.02] cursor-pointer'
         }`}
+      style={{ aspectRatio: '4 / 3' }}
     >
-      {/* Gradient thumbnail */}
-      <div
-        onClick={handleClick}
-        className={`h-32 bg-gradient-to-br ${template.thumbnailGradient} flex items-center justify-center relative`}
-      >
-        {!template.isAvailable && (
-          <div className="absolute inset-0 bg-navy-deep/60 flex items-center justify-center">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-navy-medium/80 border border-navy-medium">
-              <Lock size={12} className="text-gray-muted" />
-              <span className="text-[10px] text-gray-muted font-medium uppercase tracking-wider">Coming Soon</span>
-            </div>
-          </div>
-        )}
-        {isDragging ? (
-          <FileSpreadsheet size={36} className="text-gold" />
-        ) : (
-          <Icon
-            size={36}
-            className={`transition-colors duration-300 ${template.isAvailable ? 'text-cream/30 group-hover:text-cream/50' : 'text-cream/15'}`}
-          />
-        )}
-      </div>
+      {/* Hero background */}
+      <img
+        src={heroUrl}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
 
-      {/* Content */}
-      <div onClick={handleClick} className="p-5">
-        <h3 className="font-serif text-base text-cream mb-1">{template.name}</h3>
-        <p className="text-[11px] text-gray-muted leading-relaxed mb-3">{template.description}</p>
-        <p className="text-[10px] text-gold/50">{template.tagline}</p>
-      </div>
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20 group-hover:from-black/90 transition-all duration-300" />
 
-      {/* Upload button for available templates */}
-      {template.isAvailable && (
-        <div className="px-5 pb-4">
-          <button
-            onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[11px] text-gray-muted hover:text-cream bg-navy-light/30 hover:bg-navy-light/50 border border-navy-medium/60 transition-colors"
-          >
-            <Upload size={12} />
-            Upload File
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv,.xlsx,.xls"
-            multiple={template.id === 'market-share'}
-            onChange={handleFileSelect}
-            className="hidden"
-          />
+      {/* Lock badge for unavailable */}
+      {!template.isAvailable && (
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-sm border border-white/10">
+          <Lock size={10} className="text-white/50" />
+          <span className="text-[9px] text-white/50 font-medium uppercase tracking-wider">Coming Soon</span>
         </div>
       )}
+
+      {/* Drag indicator */}
+      {isDragging && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-gold/10 backdrop-blur-[2px]">
+          <FileSpreadsheet size={40} className="text-gold" />
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="absolute inset-0 z-10 flex flex-col justify-end p-5">
+        <div className="flex items-center gap-2.5 mb-2">
+          <div className="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10">
+            <Icon size={16} className="text-gold" />
+          </div>
+          <h3 className="font-serif text-lg text-white font-semibold">{template.name}</h3>
+        </div>
+        <p className="text-[11px] text-white/60 leading-relaxed mb-3 pl-[42px]">{template.description}</p>
+
+        {/* Action row */}
+        {template.isAvailable && (
+          <div className="flex items-center gap-2 pl-[42px]">
+            <button
+              onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-medium
+                text-white/70 hover:text-white bg-white/10 hover:bg-white/15 backdrop-blur-sm
+                border border-white/10 transition-all"
+            >
+              <Upload size={11} />
+              Upload
+            </button>
+            <button
+              onClick={handleClick}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-medium
+                text-gold hover:text-gold bg-gold/10 hover:bg-gold/20
+                border border-gold/20 transition-all"
+            >
+              Open
+              <ArrowRight size={11} />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              multiple={template.id === 'market-share'}
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -136,6 +156,13 @@ function TemplateCard({ template }: { template: TemplateDefinition }) {
 export function TemplateGallery() {
   const loadProject = useProjectStore(s => s.loadProject);
   const loadInputRef = useRef<HTMLInputElement>(null);
+
+  // Pick 4 distinct hero images for the cards
+  const cardImages = useMemo(() => {
+    const pool = getMonthlyHeroImages();
+    if (pool.length === 0) return ['', '', '', ''];
+    return [0, 1, 2, 3].map(i => pool[i % pool.length]);
+  }, []);
 
   const handleLoadProject = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -151,29 +178,33 @@ export function TemplateGallery() {
   }, [loadProject]);
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center bg-navy-deep relative">
+    <div className="h-screen flex flex-col items-center justify-center bg-navy-deep relative overflow-hidden">
+      {/* Subtle background glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gold/[0.03] blur-[120px] pointer-events-none" />
+
       {/* Heading */}
-      <div className="text-center mb-10">
-        <h1 className="font-serif text-5xl text-cream/90 font-bold tracking-tight mb-2">
-          Market Analytics Builder
-        </h1>
-        <p className="text-[11px] uppercase tracking-[0.25em] text-gold/50 font-medium">
+      <div className="text-center mb-8 relative z-10">
+        <p className="text-[10px] uppercase tracking-[0.35em] text-gold/40 font-medium mb-3">
           Russ Lyon Sotheby's International Realty
         </p>
+        <h1 className="font-serif text-4xl sm:text-5xl text-cream/90 font-bold tracking-tight">
+          Market Analytics Builder
+        </h1>
+        <div className="mx-auto mt-3 w-12 h-[2px] bg-gold/30 rounded-full" />
       </div>
 
       {/* Template grid — 2×2 */}
-      <div className="grid grid-cols-2 gap-5 max-w-2xl w-full px-6">
-        {TEMPLATE_REGISTRY.map(t => (
-          <TemplateCard key={t.id} template={t} />
+      <div className="grid grid-cols-2 gap-4 max-w-2xl w-full px-6 relative z-10">
+        {TEMPLATE_REGISTRY.map((t, i) => (
+          <TemplateCard key={t.id} template={t} heroUrl={cardImages[i]} />
         ))}
       </div>
 
       {/* Load project */}
-      <div className="mt-6">
+      <div className="mt-6 relative z-10">
         <button
           onClick={() => loadInputRef.current?.click()}
-          className="text-[11px] text-gray-muted hover:text-cream underline transition-colors"
+          className="text-[11px] text-gray-muted hover:text-cream underline underline-offset-2 transition-colors"
         >
           Open a saved project (.lex.json)
         </button>
