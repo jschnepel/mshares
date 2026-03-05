@@ -45,8 +45,8 @@ export function defaultDarkGradient(): GradientConfig {
 
 export function defaultThemeConfig(): ThemeConfig {
   return {
-    palette: defaultDarkPalette(),
-    rlsirGradient: defaultDarkGradient(),
+    palette: defaultLightPalette(),
+    rlsirGradient: defaultLightGradient(),
     fontHeading: 'Playfair Display',
     fontBody: 'Inter',
   };

@@ -43,7 +43,7 @@ export function MarketShareDonut({ market, shareType, maxBrokerages, mode = 'pre
       labels: top.map(b => b.name),
       values: top.map(b => shareType === 'dollar' ? b.marketShareDollar : b.marketShareUnits),
       colors: top.map(b => {
-        if (b.isSothebys) return darkBg ? (palette?.rlsirSecondary ?? COLORS.gold) : (palette?.rlsirPrimary ?? COLORS.navy);
+        if (b.isSothebys) return palette?.rlsirPrimary ?? (darkBg ? COLORS.gold : COLORS.navy);
         const t = competitorCount > 1 ? cIdx / (competitorCount - 1) : 0;
         cIdx++;
         if (darkBg) return `rgba(255,255,255,${0.45 - t * 0.22})`;

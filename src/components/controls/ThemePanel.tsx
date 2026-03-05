@@ -1,7 +1,7 @@
 import { useMarketStore } from '@/store/marketStore';
 import { ColorPicker } from './ColorPicker';
 import { GradientBuilder } from './GradientBuilder';
-import { defaultThemeConfig } from '@/lib/themeDefaults';
+import { defaultThemeConfig, defaultLightPalette, defaultDarkPalette, defaultLightGradient, defaultDarkGradient } from '@/lib/themeDefaults';
 import { Sun, Moon, RotateCcw } from 'lucide-react';
 import type { PageTheme, FontChoice, ColorPalette, GradientConfig } from '@/types';
 
@@ -31,7 +31,11 @@ export function ThemePanel() {
   const updateFont = (key: 'fontHeading' | 'fontBody', v: FontChoice) =>
     setThemeConfig({ ...themeConfig, [key]: v });
 
-  const reset = () => setThemeConfig(defaultThemeConfig());
+  const reset = () => {
+    const pal = pageTheme === 'dark' ? defaultDarkPalette() : defaultLightPalette();
+    const grad = pageTheme === 'dark' ? defaultDarkGradient() : defaultLightGradient();
+    setThemeConfig({ ...defaultThemeConfig(), palette: pal, rlsirGradient: grad });
+  };
 
   return (
     <div className="glass rounded-lg p-3 space-y-3">
@@ -47,7 +51,12 @@ export function ThemePanel() {
         ]).map(t => (
           <button
             key={t.id}
-            onClick={() => setPageTheme(t.id)}
+            onClick={() => {
+              setPageTheme(t.id);
+              const pal = t.id === 'dark' ? defaultDarkPalette() : defaultLightPalette();
+              const grad = t.id === 'dark' ? defaultDarkGradient() : defaultLightGradient();
+              setThemeConfig({ ...themeConfig, palette: pal, rlsirGradient: grad });
+            }}
             className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium transition-all
               ${pageTheme === t.id
                 ? 'bg-gold/15 text-gold border border-gold/20'

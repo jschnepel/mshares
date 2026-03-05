@@ -36,3 +36,16 @@ test/
 
 # Backup files
 *.bak
+
+
+# Temp data / downloads
+*.zip
+steph/
+test-data-chart-builder.xlsx
+sothebys_top_right_placeholder.png
+
+# amplify
+node_modules
+.amplify
+amplify_outputs*
+amplifyconfiguration*

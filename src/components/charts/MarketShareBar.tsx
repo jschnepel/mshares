@@ -60,20 +60,21 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
       }),
       values: top.map(b => shareType === 'dollar' ? b.marketShareDollar : b.marketShareUnits),
       colors: top.map(b => {
-        if (b.isSothebys) return darkBg ? (palette?.rlsirSecondary ?? COLORS.gold) : (palette?.rlsirPrimary ?? COLORS.navy);
+        if (b.isSothebys) return palette?.rlsirPrimary ?? (darkBg ? COLORS.gold : COLORS.navy);
         // Graduated competitor colors — higher rank = more prominent
         const t = competitorCount > 1 ? cIdx / (competitorCount - 1) : 0;
         cIdx++;
         if (darkBg) {
           const baseAlpha = 0.45 - t * 0.22;
-          return palette?.competitorBase ? palette.competitorBase : `rgba(255,255,255,${baseAlpha})`;
+          return palette?.competitorBase ?? `rgba(255,255,255,${baseAlpha})`;
         }
         if (mode === 'preview') return palette?.competitorBase ?? COLORS.grayBar;
+        if (palette?.competitorBase) return palette.competitorBase;
         const gray = Math.round(130 + t * 55);
         return `rgb(${gray},${gray},${gray})`;
       }),
       borderColors: top.map(b => b.isSothebys
-        ? (darkBg ? (palette?.rlsirSecondary ?? COLORS.gold) : (palette?.rlsirPrimary ?? COLORS.navy))
+        ? (palette?.rlsirPrimary ?? (darkBg ? COLORS.gold : COLORS.navy))
         : 'transparent'),
       sothebysIdx: top.findIndex(b => b.isSothebys),
     };

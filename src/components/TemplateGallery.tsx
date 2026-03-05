@@ -155,7 +155,7 @@ export function TemplateGallery() {
       {/* Heading */}
       <div className="text-center mb-10">
         <h1 className="font-serif text-5xl text-cream/90 font-bold tracking-tight mb-2">
-          Lex
+          Market Analytics Builder
         </h1>
         <p className="text-[11px] uppercase tracking-[0.25em] text-gold/50 font-medium">
           Russ Lyon Sotheby's International Realty
