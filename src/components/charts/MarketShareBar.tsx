@@ -19,9 +19,10 @@ interface MarketShareBarProps {
   gradient?: GradientConfig;
   fontHeading?: string;
   fontBody?: string;
+  exportDpr?: number;
 }
 
-export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'preview', darkBg = false, palette, gradient, fontHeading, fontBody }: MarketShareBarProps) {
+export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'preview', darkBg = false, palette, gradient, fontHeading, fontBody, exportDpr }: MarketShareBarProps) {
   const chartRef = useRef<ChartJS<'bar'>>(null);
   const max = maxBrokerages ?? MAX_BROKERAGES_PREVIEW;
 
@@ -155,6 +156,7 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
     indexAxis: 'y' as const,
     responsive: true,
     maintainAspectRatio: false,
+    ...(exportDpr ? { devicePixelRatio: exportDpr } : {}),
     animation: {
       duration: mode === 'export' ? 0 : 800,
       easing: 'easeOutQuart' as const,

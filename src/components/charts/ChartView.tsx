@@ -297,6 +297,8 @@ export interface BrandedPageProps {
   gradient?: GradientConfig;
   fontHeading?: string;
   fontBody?: string;
+  /** Device pixel ratio override for Chart.js during export (default: undefined = browser default) */
+  exportDpr?: number;
 }
 
 function formatDollar(val: number): string {
@@ -306,7 +308,7 @@ function formatDollar(val: number): string {
   return `$${val.toFixed(0)}`;
 }
 
-export function BrandedPage({ market, shareType, visualization, heroUrl, heroCrop, showKPI, showSummary, pageTheme = 'light', palette, gradient, fontHeading, fontBody }: BrandedPageProps) {
+export function BrandedPage({ market, shareType, visualization, heroUrl, heroCrop, showKPI, showSummary, pageTheme = 'light', palette, gradient, fontHeading, fontBody, exportDpr }: BrandedPageProps) {
   const { dateStart, dateEnd } = useMarketStore();
   const summary = useMemo(
     () => showSummary ? generateExecutiveSummary(market, shareType) : '',
@@ -488,10 +490,10 @@ export function BrandedPage({ market, shareType, visualization, heroUrl, heroCro
         {/* Chart — takes all remaining vertical space */}
         <div className="flex-1 min-h-0 py-1" style={{ paddingLeft: 16, paddingRight: 10 }}>
           <div className="h-full w-full">
-            {visualization === 'bar' && <MarketShareBar key={`branded-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} />}
+            {visualization === 'bar' && <MarketShareBar key={`branded-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} exportDpr={exportDpr} />}
             {visualization === 'treemap' && <MarketShareTreemap key={`treemap-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} />}
             {visualization === 'sankey' && <MarketShareSankey key={`sankey-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} />}
-            {visualization === 'donut' && <MarketShareDonut key={`donut-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} />}
+            {visualization === 'donut' && <MarketShareDonut key={`donut-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} exportDpr={exportDpr} />}
             {visualization === 'lollipop' && <MarketShareLollipop key={`lollipop-${market.id}-${shareType}-${extraSections}-${pageTheme}`} market={market} shareType={shareType} mode="branded" darkBg={isDark} palette={palette} gradient={gradient} fontHeading={fontHeading} fontBody={fontBody} />}
           </div>
         </div>

@@ -9,11 +9,13 @@ import {
 } from '@/lib/exportEngine';
 
 /**
- * WYSIWYG export: render at the same size as the preview (600px wide, 8.5:11 ratio),
- * then capture at 4x scale for high-resolution output (~2400×3104 px).
+ * WYSIWYG export: render at preview dimensions, capture at high scale.
+ * Chart.js is told to use a matching devicePixelRatio so its internal canvas is crisp.
+ * Final output: 2400 × 3104 px (~283 DPI on letter paper).
  */
 const RENDER_WIDTH = 600;
 const RENDER_HEIGHT = Math.round(RENDER_WIDTH * (11 / 8.5)); // 776
+const EXPORT_SCALE = 4;
 
 export interface ExportConfig {
   visualization: VisualizationType;
@@ -79,17 +81,18 @@ async function renderAndCapture(
       gradient={config.gradient}
       fontHeading={config.fontHeading}
       fontBody={config.fontBody}
+      exportDpr={EXPORT_SCALE}
     />
   );
 
   // Wait for React render + Chart.js animation (disabled in branded mode) + image paint
   await new Promise(r => setTimeout(r, 2000));
 
-  // Capture at 4x scale for high-resolution output
+  // Capture at high scale for crisp output
   const canvas = await html2canvas(container, {
     width: RENDER_WIDTH,
     height: RENDER_HEIGHT,
-    scale: 4,
+    scale: EXPORT_SCALE,
     useCORS: true,
     allowTaint: false,
     backgroundColor: bgColor,

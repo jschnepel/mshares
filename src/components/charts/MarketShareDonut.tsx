@@ -17,9 +17,10 @@ interface DonutProps {
   gradient?: GradientConfig;
   fontHeading?: string;
   fontBody?: string;
+  exportDpr?: number;
 }
 
-export function MarketShareDonut({ market, shareType, maxBrokerages, mode = 'preview', darkBg = false, palette, fontBody }: DonutProps) {
+export function MarketShareDonut({ market, shareType, maxBrokerages, mode = 'preview', darkBg = false, palette, fontBody, exportDpr }: DonutProps) {
   const chartRef = useRef<ChartJS<'doughnut'>>(null);
   const max = maxBrokerages ?? MAX_BROKERAGES_PREVIEW;
   const isClean = mode === 'export' || mode === 'branded';
@@ -98,6 +99,7 @@ export function MarketShareDonut({ market, shareType, maxBrokerages, mode = 'pre
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    ...(exportDpr ? { devicePixelRatio: exportDpr } : {}),
     cutout: '55%',
     animation: {
       duration: mode === 'export' ? 0 : 800,
