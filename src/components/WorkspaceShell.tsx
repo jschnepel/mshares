@@ -6,6 +6,7 @@ import { DropZone } from '@/components/upload/DropZone';
 import { BatchQueue } from '@/components/upload/BatchQueue';
 import { ChartView } from '@/components/charts/ChartView';
 import { ExportControls } from '@/components/export/ExportControls';
+import { ExportProgressModal } from '@/components/export/ExportProgressModal';
 import { PreviewModal } from '@/components/preview/PreviewModal';
 import { ChartBuilder } from '@/components/builder/ChartBuilder';
 import { Upload } from 'lucide-react';
@@ -46,6 +47,7 @@ function MarketShareWorkspace() {
         <ChartView />
       </div>
       <PreviewModal />
+      <ExportProgressModal />
     </>
   );
 }

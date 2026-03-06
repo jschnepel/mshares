@@ -9,7 +9,7 @@ import { validateBatchExport, type BatchValidationResult } from '@/lib/exportVal
 export function ExportControls() {
   const {
     selectedIds, getSelectedMarkets, exportFormat, setExportFormat,
-    isExporting, setIsExporting, setExportProgress, markets, shareType,
+    isExporting, setIsExporting, setExportProgress, setExportStage, markets, shareType,
     visualization, showKPI, showSummary, pageTheme, heroImages, dateStart, dateEnd,
     themeConfig,
   } = useMarketStore();
@@ -46,6 +46,7 @@ export function ExportControls() {
     setError(null);
     setIsExporting(true);
     setExportProgress(0);
+    setExportStage('Preparing export...');
 
     try {
       const readyMarkets = selectedMarkets.filter(
@@ -60,15 +61,21 @@ export function ExportControls() {
         readyMarkets,
         shareType,
         exportFormat,
-        (current, total) => setExportProgress(Math.round((current / total) * 100)),
+        (current, total) => {
+          setExportProgress(Math.round((current / total) * 100));
+          setExportStage(`Rendering report ${current} of ${total}...`);
+        },
         { visualization, showKPI, showSummary, pageTheme, palette: themeConfig.palette, gradient: themeConfig.rlsirGradient, fontHeading: themeConfig.fontHeading, fontBody: themeConfig.fontBody },
       );
+
+      setExportStage('Packaging ZIP...');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Export failed';
       setError(`${msg}. ${DEVELOPER_CONTACT.action}`);
     } finally {
       setIsExporting(false);
       setExportProgress(0);
+      setExportStage('');
     }
   };
 

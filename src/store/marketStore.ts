@@ -40,6 +40,7 @@ interface MarketStore {
   exportFormat: ExportFormat;
   isExporting: boolean;
   exportProgress: number;
+  exportStage: string;
 
   // Actions
   addFiles: (files: File[]) => Promise<void>;
@@ -67,6 +68,7 @@ interface MarketStore {
   setExportFormat: (format: ExportFormat) => void;
   setIsExporting: (val: boolean) => void;
   setExportProgress: (val: number) => void;
+  setExportStage: (stage: string) => void;
 
   // Computed
   getSelectedMarkets: () => MarketData[];
@@ -98,6 +100,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
   exportFormat: 'png',
   isExporting: false,
   exportProgress: 0,
+  exportStage: '',
 
   addFiles: async (files) => {
     set({ isProcessing: true });
@@ -260,6 +263,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
   setExportFormat: (format) => set({ exportFormat: format }),
   setIsExporting: (val) => set({ isExporting: val }),
   setExportProgress: (val) => set({ exportProgress: val }),
+  setExportStage: (stage) => set({ exportStage: stage }),
 
   getSelectedMarkets: () => {
     const state = get();
