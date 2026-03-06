@@ -158,7 +158,7 @@ export function MarketShareBar({ market, shareType, maxBrokerages, mode = 'previ
     maintainAspectRatio: false,
     ...(exportDpr ? { devicePixelRatio: exportDpr } : {}),
     animation: {
-      duration: mode === 'export' ? 0 : 800,
+      duration: (mode === 'export' || exportDpr) ? 0 : 800,
       easing: 'easeOutQuart' as const,
     },
     layout: {

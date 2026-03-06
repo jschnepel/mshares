@@ -85,8 +85,21 @@ async function renderAndCapture(
     />
   );
 
-  // Wait for React render + Chart.js animation (disabled in branded mode) + image paint
-  await new Promise(r => setTimeout(r, 2000));
+  // Wait for the chart to actually render (canvas or SVG appears in the DOM)
+  const waitForChart = async (maxMs = 8000) => {
+    const start = Date.now();
+    while (Date.now() - start < maxMs) {
+      const hasCanvas = container.querySelector('canvas');
+      const hasSvg = container.querySelector('svg');
+      if (hasCanvas || hasSvg) {
+        // Give an extra beat for paint + data labels
+        await new Promise(r => setTimeout(r, 500));
+        return;
+      }
+      await new Promise(r => setTimeout(r, 100));
+    }
+  };
+  await waitForChart();
 
   // Capture at high scale for crisp output
   const canvas = await html2canvas(container, {

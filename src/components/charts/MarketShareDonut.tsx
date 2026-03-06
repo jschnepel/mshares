@@ -102,7 +102,7 @@ export function MarketShareDonut({ market, shareType, maxBrokerages, mode = 'pre
     ...(exportDpr ? { devicePixelRatio: exportDpr } : {}),
     cutout: '55%',
     animation: {
-      duration: mode === 'export' ? 0 : 800,
+      duration: (mode === 'export' || exportDpr) ? 0 : 800,
     },
     layout: {
       padding: mode === 'branded' ? 10 : 20,
